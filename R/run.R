@@ -1,98 +1,91 @@
 
 
-
-#' Generate SCCS database
+#' sccs for mnd study
 #'
 #' @return
 #' @export
 #'
 #' @examples
-CreateSCCSData<- function(demo,ip, rx){
-    rx_riluzole<- shrink_interval(rx[grepl('riluzole|riluteck',drug_name,ignore.case = T) &
-                                         !setting %in% c("I")],"date_rx_st","date_rx_end")
-    ip_riluzole<- shrink_interval(ip[id %in% demo$id & id %in% rx_riluzole$id],"date_adm","date_dsg",gap = 7)
-    rx_ip <- merge(rx_riluzole[,indx:=NULL],
-                   ip_riluzole[,indx:=NULL],by="id",allow.cartesian = T)
-    demo_rx_ip<-merge(demo,rx_ip,by="id")
-    return(demo_rx_ip)
+run <- function(){
+    message("merge exposure and outcome datasets")
+    dt_combined <- get_DT_Exposure_Endpoint(demo,ip,rx)
+    message("SCCS data cleanning")
+    dt_sccs <- get_DT_SCCS(dt_combined)
+    ageq <- floor(seq(20,90,10)*365)
+    dt_sccs$id <- as.numeric(dt_sccs$id)
+    dt_sccs$dob_dmy <- as.numeric(format(dt_sccs$dob,"%d%m%Y"))
+#    dob_dmy_model <- dt_sccs[,.(id,event,dob_dmy)][,unique(.SD)][,dob_dmy] # this is the dob for previous SCCS package, with version less than 1.3
+    result <- sccs(event ~ strx_30b + strx_0a + strx_30a + strx_60a + strx_90a+ strx_120a +
+                                   strx_150a +strx_180a +
+                                   age + season,
+                               indiv = id,
+                               astart = obst,
+                               aend = obed,
+                               aevent = event,
+                               adrug = list(strx_30b,strx_0a, strx_30a,
+                                            strx_60a,strx_90a,strx_120a,
+                                            strx_150a, strx_180a),
+                               aedrug = list(edrx_30b,edrx_0a,edrx_30a,edrx_60a,edrx_90a,
+                                             edrx_120a, edrx_150a, edrx_180a),
+                               dataformat = "stack", agegrp = ageq, seasongrp = c(0103,0105,0109,0111),
+                               dob=dob_dmy,
+                               data = as.data.frame(dt_sccs))
+    return(result)
 }
 
 
-#' Title
+
+#' Print with rounding, with 0 at the end if appropriate
 #'
-#' @param df_dx_rx_ip
-#' @param obst
+#' @param x number
+#' @param n digits in round
+#'
+#' @return
+#'
+#' @examples
+sxd <- function(x,n=2){
+    sprintf(paste0("%.",n,"f"),round(x,n))
+}
+
+get_colnm <- function(adrug,data,...){
+    call.obj <- gsub("list","cbind",deparse(substitute(adrug)))
+    return(colnames(eval(parse(text=call.obj),data)))
+}
+
+#' Standardsccs with formated output
+#'
+#' @param fml the formula in standardsccs
+#' @param ... others
 #'
 #' @return
 #' @export
 #'
 #' @examples
-cleanSCCSData <- function(df_dx_rx_ip,obst="2001-08-24"){
-    df_mnd <- df_dx_rx_ip[,`:=`(obst=pmax(earliest_dx_date,ymd(obst),na.rm = T),
-                                obed=pmin(dod,onset_ %m+% years(2),na.rm=T))
-    ][,`:=`(obst=as.numeric(obst-dob),
-            obed=as.numeric(obed-dob),
-            event=as.numeric(startad-dob),
-            endevent=as.numeric(endad-dob))]
-
-    df_mnd <- df_mnd[,`:=`(strx=as.numeric(strx_ymd-dob),
-                           edrx=as.numeric(edrx_ymd-dob))]
-
-    setnames(df_mnd,"reference_key","refkey")
-    # for more than one rx periods:
-    last_rx_time <- unique(df_mnd[,.(refkey,strx,edrx)])[,last_rx_ed:=lag(edrx),.(refkey)][]
-    df_mnd <- merge(df_mnd,last_rx_time,by=c("refkey","strx","edrx"))
-
-    df_mnd[,`:=`(strx_30b=pmax(strx-30,last_rx_ed+1,na.rm = T),edrx_30b=strx-1)]
-    df_mnd[,`:=`(strx_0a=as.numeric(NA),edrx_0a = as.numeric(NA),
-                 strx_30a = as.numeric(NA), edrx_30a = as.numeric(NA),
-                 strx_60a = as.numeric(NA), edrx_60a = as.numeric(NA),
-                 strx_90a = as.numeric(NA), edrx_90a = as.numeric(NA),
-                 strx_120a = as.numeric(NA), edrx_120a = as.numeric(NA),
-                 strx_150a = as.numeric(NA), edrx_150a = as.numeric(NA),
-                 strx_180a = as.numeric(NA), edrx_180a = as.numeric(NA))]
-
-    df_mnd[as.numeric(edrx-strx)<30,
-           `:=`(strx_0a=strx,edrx_0a = edrx)]
-
-    df_mnd[as.numeric(edrx-strx)>=30 & as.numeric(edrx-strx)<60 ,
-           `:=`(strx_0a=strx,edrx_0a = strx+29,
-                strx_30a = strx+30, edrx_30a = edrx)]
-
-    df_mnd[as.numeric(edrx-strx)>=60 & as.numeric(edrx-strx)<90 ,
-           `:=`(strx_0a=strx,edrx_0a = strx+29,
-                strx_30a = strx+30, edrx_30a = strx+59,
-                strx_60a = strx+60, edrx_60a = edrx)]
-
-    df_mnd[as.numeric(edrx-strx)>=90 & as.numeric(edrx-strx)<120 ,
-           `:=`(strx_0a=strx,edrx_0a = strx+29,
-                strx_30a = strx+30, edrx_30a = strx+59,
-                strx_60a = strx+60, edrx_60a = strx+89,
-                strx_90a = strx+90, edrx_90a = edrx)]
-
-    df_mnd[as.numeric(edrx-strx)>=120 & as.numeric(edrx-strx)<150,
-           `:=`(strx_0a=strx,edrx_0a = strx+29,
-                strx_30a = strx+30, edrx_30a = strx+59,
-                strx_60a = strx+60, edrx_60a = strx+89,
-                strx_90a = strx+90, edrx_90a = strx+119,
-                strx_120a = strx+120, edrx_120a = edrx)]
-
-    df_mnd[as.numeric(edrx-strx)>=150 & as.numeric(edrx-strx)<180,
-           `:=`(strx_0a=strx,edrx_0a = strx+29,
-                strx_30a = strx+30, edrx_30a = strx+59,
-                strx_60a = strx+60, edrx_60a = strx+89,
-                strx_90a = strx+90, edrx_90a = strx+119,
-                strx_120a = strx+120, edrx_120a = strx+149,
-                strx_150a = strx+150, edrx_150a = edrx)]
-
-    df_mnd[as.numeric(edrx-strx)>=180 ,
-           `:=`(strx_0a=strx,edrx_0a = strx+29,
-                strx_30a = strx+30, edrx_30a = strx+59,
-                strx_60a = strx+60, edrx_60a = strx+89,
-                strx_90a = strx+90, edrx_90a = strx+119,
-                strx_120a = strx+120, edrx_120a = strx+149,
-                strx_150a = strx+150, edrx_150a = strx+179,
-                strx_180a = strx+180, edrx_180a = edrx)]
-
+sccs <- function(fml,...){
+    out <- list()
+    fit_sccs <- standardsccs(formula = fml,...)
+    out$fit <- fit_sccs
+    dt_sccs <- setDT(formatdata(...))
+    colnm <- get_colnm(exp,...)
+    dt_sccs <- dt_sccs[,lapply(.SD,function(x) as.numeric(as.character(x)))]
+    fml <- update(fml,.~. - age-season)
+    dt_sccs[, ctrl0 := as.numeric(eval(fml[[3]])==0)]
+    out$dt <- dt_sccs
+    n_py <- rbindlist(lapply(c(colnm,"ctrl0"), function(x) dt_sccs[get(x)==1,.(n_event=sum(event),PY=sxd(sum(interval)/365.25,n=2))]))
+    n_py <- cbind(period=c(colnm,"ctrl0"),n_py)
+    out$n_py <- n_py
+    irr <- data.table(fit_sccs$conf.int, keep.rownames=T
+    )[, .(period=sub("1$","",rn), adj.IRR=paste0(sxd(`exp(coef)`,n=2)," (",
+                                                 sxd(`lower .95`,n=2),"-",
+                                                 sxd(`upper .95`,n=2),")"))]
+    out$irr <- irr
+    irr <-  merge(n_py,irr,by="period",all.x = T,sort=F)
+    out$res <- irr
+    out <- structure(out,class=c("mndsccs","list"))
+    return(out)
 }
 
+
+print.mndsccs <- function(x){
+    print(x$res)
+}
