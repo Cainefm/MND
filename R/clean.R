@@ -6,7 +6,7 @@
 #' @param gap the gap between two prescription records which you would like to merge. For instance, n = 7 when two Rx records with interval less than 7 days may be consider as the same prescription.
 #' @param st the column name for starting date
 #' @param ed the column name for ending date
-#' @import data.table
+#' @import data.table, lubridate
 #'
 #' @return A data table will be generate with merged interval.
 #' @examples
@@ -15,8 +15,7 @@
 #'         date_end=lubridate::ymd(c("2021-1-5","2021-1-6")))
 #' shrink_interval(data,"date_st","date_end",gap=2)
 shrink_interval <- function(data,st,ed,gap=1){
-    data <- copy(data[,na.omit(.SD)][,list(id,st=get(st),ed=get(ed))])
-#    print("stupid fm")
+    data <- copy(data[,na.omit(.SD)][,list(id,st=ymd(get(st)),ed=ymd(get(ed)))])
     setorder(data,id,st)
     output <- data[,indx:=c(0, cumsum(as.numeric(shift(st,type="lead"))>
                                           cummax(as.numeric(ed)+gap))[-.N]),id
@@ -50,7 +49,7 @@ shrink_interval <- function(data,st,ed,gap=1){
 #' 2665:  9903734   F 1955-07-02 2018-11-28 2017-11-28 2018-07-25  2018-11-20 2017-11-27 2017-11-28
 #' 2666:  9903734   F 1955-07-02 2018-11-28 2017-11-28 2018-07-25  2018-11-20 2018-07-30 2018-08-10
 #' 2667:  9903734   F 1955-07-02 2018-11-28 2017-11-28 2018-07-25  2018-11-20 2018-10-31 2018-11-02
-get_DT_Exposure_Endpoint <- function(demo, ip, rx){
+get_DT_Exposure_Endpoint <- function(demo, rx, ip){
     rx_riluzole<- shrink_interval(rx[grepl('riluzole|riluteck',drug_name,ignore.case = T) &
                                          !setting %in% c("I")],"date_rx_st","date_rx_end")
     ip_riluzole<- shrink_interval(ip[id %in% demo$id & id %in% rx_riluzole$id],"date_adm","date_dsg",gap = 7)

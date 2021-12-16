@@ -8,7 +8,7 @@
 #' @examples
 run <- function(){
     message("merge exposure and outcome datasets")
-    dt_combined <- get_DT_Exposure_Endpoint(demo,ip,rx)
+    dt_combined <- get_DT_Exposure_Endpoint(demo,rx,ip)
     message("SCCS data cleanning")
     dt_sccs <- get_DT_SCCS(dt_combined)
     ageq <- floor(seq(20,90,10)*365)

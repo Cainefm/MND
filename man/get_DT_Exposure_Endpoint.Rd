@@ -4,14 +4,14 @@
 \alias{get_DT_Exposure_Endpoint}
 \title{Combine the datasets with exposure and outcomes}
 \usage{
-get_DT_Exposure_Endpoint(demo, ip, rx)
+get_DT_Exposure_Endpoint(demo, rx, ip)
 }
 \arguments{
 \item{demo}{the dataset with demographic information, including id, dob, dod, sex, onset_date. Pls check the data shall.}
 
-\item{ip}{the dataset with all in-hospitalization records, including id, date of adminssion, date of discharge, type of records (setting, IP, OP, AE). Pls check the data shall.}
-
 \item{rx}{the dataset with all prescription records, including id, drug name, date of prescription start and end, type of presciption (IP, OP, AE, Discharge). Pls check the data shall.}
+
+\item{ip}{the dataset with all in-hospitalization records, including id, date of adminssion, date of discharge, type of records (setting, IP, OP, AE). Pls check the data shall.}
 }
 \value{
 a combined data set in data table format. One patients may have multiple rows of records.
