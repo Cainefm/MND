@@ -6,7 +6,7 @@
 #' @param gap the gap between two prescription records which you would like to merge. For instance, n = 7 when two Rx records with interval less than 7 days may be consider as the same prescription.
 #' @param st the column name for starting date
 #' @param ed the column name for ending date
-#' @import data.table, lubridate
+#' @import data.table
 #'
 #' @return A data table will be generate with merged interval.
 #' @examples
@@ -15,7 +15,7 @@
 #'         date_end=lubridate::ymd(c("2021-1-5","2021-1-6")))
 #' shrink_interval(data,"date_st","date_end",gap=2)
 shrink_interval <- function(data,st,ed,gap=1){
-    data <- copy(data[,na.omit(.SD)][,list(id,st=ymd(get(st)),ed=ymd(get(ed)))])
+    data <- copy(data[,na.omit(.SD)][,list(id,st=lubridate::ymd(get(st)),ed=lubridate::ymd(get(ed)))])
     setorder(data,id,st)
     output <- data[,indx:=c(0, cumsum(as.numeric(shift(st,type="lead"))>
                                           cummax(as.numeric(ed)+gap))[-.N]),id
@@ -71,7 +71,7 @@ get_DT_Exposure_Endpoint <- function(demo, rx, ip){
 #'
 #' @examples no example
 get_DT_SCCS <- function(data,obst="2001-08-24"){
-    df_mnd <- data[,`:=`(obst=pmax(onset_date,ymd(obst),na.rm = T),
+    df_mnd <- data[,`:=`(obst=pmax(onset_date,lubridate::ymd(obst),na.rm = T),
                                 obed=pmin(dod,onset_date %m+% years(2),na.rm=T))
     ][,`:=`(obst=as.numeric(obst-dob),
             obed=as.numeric(obed-dob),

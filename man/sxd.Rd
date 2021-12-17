@@ -17,3 +17,6 @@ sxd(x, n = 2)
 \description{
 Print with rounding, with 0 at the end if appropriate
 }
+\examples{
+sxd(2.01999,2)
+}

@@ -5,7 +5,7 @@
 #' @return
 #' @export
 #'
-#' @examples
+#' @examples run()
 run <- function(){
     message("merge exposure and outcome datasets")
     dt_combined <- get_DT_Exposure_Endpoint(demo,rx,ip)
@@ -42,7 +42,7 @@ run <- function(){
 #'
 #' @return
 #'
-#' @examples
+#' @examples sxd(2.01999,2)
 sxd <- function(x,n=2){
     sprintf(paste0("%.",n,"f"),round(x,n))
 }
@@ -58,9 +58,8 @@ get_colnm <- function(adrug,data,...){
 #' @param ... others
 #'
 #' @return
-#' @export
 #'
-#' @examples
+#' @examples sccs()
 sccs <- function(fml,...){
     out <- list()
     fit_sccs <- standardsccs(formula = fml,...)
@@ -86,6 +85,14 @@ sccs <- function(fml,...){
 }
 
 
+#' Print only outcome for MND study
+#'
+#' @param x
+#'
+#' @return
+#' @export
+#'
+#' @examples
 print.mndsccs <- function(x){
     print(x$res)
 }

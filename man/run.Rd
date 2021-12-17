@@ -12,3 +12,6 @@ run()
 \description{
 sccs for mnd study
 }
+\examples{
+run()
+}

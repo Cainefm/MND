@@ -17,3 +17,6 @@ sccs(fml, ...)
 \description{
 Standardsccs with formated output
 }
+\examples{
+sccs()
+}
