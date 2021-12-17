@@ -13,7 +13,7 @@
   - **Korea** ：**[Ju-Young Shin](https://skb.skku.edu/eng_pharm/intro/faculty_pharmacy.do?mode=view&perId=LZStrIYVgqgzg6gKgdgTwMYFMCyBFAmkgnMAZQCk4AOAaQwF4qg%20&)**, **[Sungho Bea]()**
 - Study start date: **Jun, 2021**
 - Study end date: **-**
-- Protocol: [AESIs in COVID-19 Subjects Protocol](https://ohdsi-studies.github.io/Covid19SubjectsAesiIncidenceRate/Protocol.html)
+- Protocol: 
 - Publications: **-**
 - Results explorer: **-**
 
