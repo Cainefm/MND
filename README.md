@@ -68,7 +68,7 @@
 
 5. For sccs estimation:
     ```r
-     run_sccs()
+     run_sccs(demo,rx,ip)
     ```
 
 
