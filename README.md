@@ -36,18 +36,30 @@
 
 4. The common data shell are presented in the protocol  
 
-**Demographic table**  
-![image](https://user-images.githubusercontent.com/20833144/147062700-bfa24423-680f-40da-a9f3-a58b5be34663.png)  
-**Inpatient records**  
-![image](https://user-images.githubusercontent.com/20833144/147062780-5cca43e7-7fa3-4c17-b534-6ba84e089fbf.png)  
-**Drug records**  
-![image](https://user-images.githubusercontent.com/20833144/147062866-eeccd191-d07c-41c0-baca-9f8b397e9331.png)  
-**Diagnosis records**  
-![image](https://user-images.githubusercontent.com/20833144/147062935-b6d7ab55-aee7-455e-bdf0-b9da26444542.png)  
+****  
+<p align="center">
+  Demographic table
+  <img width="400" src="https://user-images.githubusercontent.com/20833144/147062700-bfa24423-680f-40da-a9f3-a58b5be34663.png">
+</p>
+<p align="center">
+  Inpatient records
+ <img width="300" src="https://user-images.githubusercontent.com/20833144/147062780-5cca43e7-7fa3-4c17-b534-6ba84e089fbf.png">
+</p>
+<p align="center">
+ Drug records
+ <img width="500" src="https://user-images.githubusercontent.com/20833144/147062866-eeccd191-d07c-41c0-baca-9f8b397e9331.png">
+</p>
+<p align="center">
+   Diagnosis records
+   <img width="400" src="https://user-images.githubusercontent.com/20833144/147062935-b6d7ab55-aee7-455e-bdf0-b9da26444542.png">
+</p>
 
-*\* The reference date is the admission date in inpatient, outpatient, and A&E settings.*
-*$The codes can be ICD 9, ICD 10 or read codes.*
- 
+    ```r
+    ## Some data for testing are attached in the package
+    data(demo)
+    ```
+![image](https://user-images.githubusercontent.com/20833144/147063331-ce859a07-d71e-4c7e-9be4-4797d81764fa.png)
+
 6. For incidence estimation. 
 
     ```r
