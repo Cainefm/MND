@@ -21,6 +21,7 @@
 - A database in the data shall format provided in protocol
 - R version 4.0.0 or newer
 - On Windows: [RTools](http://cran.r-project.org/bin/windows/Rtools/)
+- **SCCS version has to be version 1.3. Now there is a potential bug in version 1.4 or above.**
 
 # How to Run
 1. Install [R](https://www.r-project.org/) and/or [Rstudio](https://www.rstudio.com/products/rstudio/download/).
