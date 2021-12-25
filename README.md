@@ -71,5 +71,3 @@
     ```r
      run_sccs(demo,rx,ip)
     ```
-
-
