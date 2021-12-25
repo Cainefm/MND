@@ -19,7 +19,7 @@ shrink_interval <- function(data,st,ed,gap=1){
     setorder(data,id,st)
     output <- data[,indx:=c(0, cumsum(as.numeric(shift(st,type="lead"))>
                                           cummax(as.numeric(ed)+gap))[-.N]),id
-    ][,.(st=first(st),ed=last(ed)),.(id,indx)]
+    ][,.(st=min(st),ed=max(ed)),.(id,indx)]
     setnames(output,c("st","ed"),c(st,ed))
     return(output)
 }
@@ -32,6 +32,7 @@ shrink_interval <- function(data,st,ed,gap=1){
 #' @param demo the dataset with demographic information, including id, dob, dod, sex, onset_date. Pls check the data shall.
 #' @param ip the dataset with all in-hospitalization records, including id, date of adminssion, date of discharge, type of records (setting, IP, OP, AE). Pls check the data shall.
 #' @param rx the dataset with all prescription records, including id, drug name, date of prescription start and end, type of presciption (IP, OP, AE, Discharge). Pls check the data shall.
+#' @param riluzole_name the name in your database stands for riluzole.
 #' @return a combined data set in data table format. One patients may have multiple rows of records.
 #' @import data.table
 #' @export
@@ -49,12 +50,16 @@ shrink_interval <- function(data,st,ed,gap=1){
 #' 2665:  9903734   F 1955-07-02 2018-11-28 2017-11-28 2018-07-25  2018-11-20 2017-11-27 2017-11-28
 #' 2666:  9903734   F 1955-07-02 2018-11-28 2017-11-28 2018-07-25  2018-11-20 2018-07-30 2018-08-10
 #' 2667:  9903734   F 1955-07-02 2018-11-28 2017-11-28 2018-07-25  2018-11-20 2018-10-31 2018-11-02
-get_DT_Exposure_Endpoint <- function(demo, rx, ip){
-    rx_riluzole<- shrink_interval(rx[grepl('riluzole|riluteck',drug_name,ignore.case = T) &
+get_DT_Exposure_Endpoint <- function(demo, rx, ip,riluzole_name='riluzole|riluteck',...){
+    rx_riluzole<- shrink_interval(rx[grepl(riluzole_name,drug_name,ignore.case = T) &
                                          !setting %in% c("I")],"date_rx_st","date_rx_end")
+    rx_earliest <- rx_riluzole[,.(earliest_rx=min(date_rx_st)),id][,unique(.SD)]
+
     ip_riluzole<- shrink_interval(ip[id %in% demo$id & id %in% rx_riluzole$id],"date_adm","date_dsg",gap = 7)
     rx_ip <- merge(rx_riluzole[,indx:=NULL],
                    ip_riluzole[,indx:=NULL],by="id",allow.cartesian = T)
+
+    rx_ip <- merge(rx_ip,rx_earliest,by="id",all.x=T)
     demo_rx_ip<-merge(demo,rx_ip,by="id")
     return(demo_rx_ip)
 }
@@ -70,9 +75,13 @@ get_DT_Exposure_Endpoint <- function(demo, rx, ip){
 #' @export
 #'
 #' @examples no example
-get_DT_SCCS <- function(data,obst="2001-08-24"){
-    df_mnd <- data[,`:=`(obst=pmax(onset_date,lubridate::ymd(obst),na.rm = T),
-                                obed=pmin(dod,onset_date %m+% years(2),na.rm=T))
+get_DT_SCCS <- function(data,...){
+    df_mnd <- data[,`:=`(obst=pmax(pmin(onset_date %m-% years(1),
+                                        earliest_rx %m-% years(1),na.rm=T),
+                                   lubridate::ymd(obst),na.rm = T),
+                         obed=pmin(dod,
+                                   pmin(onset_date ,
+                                        earliest_rx,na.rm=T) %m+% years(2),obed,na.rm=T))
     ][,`:=`(obst=as.numeric(obst-dob),
             obed=as.numeric(obed-dob),
             event=as.numeric(date_adm-dob),
@@ -81,6 +90,7 @@ get_DT_SCCS <- function(data,obst="2001-08-24"){
     df_mnd <- df_mnd[,`:=`(strx=as.numeric(date_rx_st-dob),
                            edrx=as.numeric(date_rx_end-dob))]
 
+    df_mnd <- df_mnd[strx>=obst & strx<= obed & event >=obst & event <= obed]
     # for more than one rx periods:
     last_rx_time <- unique(df_mnd[,.(id,strx,edrx)])[,last_rx_ed:=as.numeric(shift(edrx,n = 1,fill = NA,type = "lag")),.(id)]
 
@@ -138,5 +148,69 @@ get_DT_SCCS <- function(data,obst="2001-08-24"){
                 strx_150a = strx+150, edrx_150a = strx+179,
                 strx_180a = strx+180, edrx_180a = edrx)]
     return(df_mnd)
+}
+
+
+get_subtype <- function(data,icd_subtypes_temp){
+    apply(icd_subtypes_temp,1,function(x) data[,(paste0("subtype.",x[["abbr"]])):=fifelse(grepl(x[["grepl"]],codes),T,F)])
+}
+
+
+
+#' Create a dataset for survival and incidence calculation
+#'
+#' @param dx
+#' @param demo
+#' @param codes_sys can be "icd9", "icd10", or "readcodes"
+#'
+#' @return
+#' @export
+#'
+#' @examples
+clean_4_survival <- function(demo,dx,codes_sys,...){
+
+    if(codes_sys=="icd9"){
+        codes_defined <- "^335.2$|^335.2[01249]"
+    }else if(codes_sys=="icd10"){
+        codes_defined <- "^G12.2"
+    }else if(codes_sys=="readcode"){
+        stop("Don't worry. Fm is working on Readcode now.")
+    }
+
+    icd_subtypes <- as.data.table(readxl::read_excel("data/codes_mnd.xlsx",sheet = "subtype"))
+    icd_subtypes_temp <- icd_subtypes[,.(Dx, abbr, grepl=get(codes_sys))]
+    temp_dx <- copy(dx)
+    setorder(temp_dx,"id","ref_date")
+    temp_dx <- temp_dx[grepl(codes_defined,codes),.SD[ref_date==min(ref_date)],id
+                       ][,unique(.SD)][,.(id,onset_date=ref_date,codes=codes)]
+    temp_dx_codes <- dcast(temp_dx,id+onset_date~.,value.var = "codes",fun.aggregate = function(x) paste(unique(x),collapse = ","))
+    setnames(temp_dx_codes,".","codes")
+
+    get_subtype(temp_dx,icd_subtypes_temp)
+    temp_dx[,codes:=NULL]
+    temp_dx <- dcast(temp_dx,
+                     id+onset_date~.,
+                     value.var = c("subtype.als","subtype.pma","subtype.pbp","subtype.pls","subtype.others"),
+                     fun.aggregate = function(x) any(x))
+    temp_dx <- merge(temp_dx_codes,temp_dx,by=c("id","onset_date"))
+
+
+    df_surv <- merge(temp_dx,
+                     demo[,.(id,sex,dob,dod)],
+                     by="id",all.x=T)
+
+    df_surv[,outcome:=fifelse(!is.na(dod),1,0)]
+    df_surv[,obs.deadline:=fifelse(is.na(dod),ymd('20191231'),dod)]
+    df_surv[,age_adm:=as.numeric((onset_date-dob)/365.25)]
+    df_surv[,age_group:=cut(age_adm, breaks = c(0,6,13,20,48,65,80,Inf),
+                            include.lowest = T,right=FALSE)]
+    df_surv[,age_group_std:=cut(age_adm, breaks = c(seq(0,85,5),+Inf),
+                                include.lowest = T,right=FALSE,labels=c("0-4", "5-9", "10-14", "15-19", "20-24", "25-29", "30-34",
+                                                                        "35-39", "40-44", "45-49", "50-54", "55-59", "60-64", "65-69",
+                                                                        "70-74", "75-79", "80-84", "85+"))]
+    df_surv[,year_onset:=year(onset_date)]
+    df_surv[,time_to_event:=as.numeric(obs.deadline-onset_date)]
+    df_surv <- df_surv[time_to_event>=0 & onset_date>=ymd("1994-01-01")]
+    return(df_surv)
 }
 
