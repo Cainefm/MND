@@ -212,7 +212,12 @@ p_inci <- function(data,region="Hong Kong"){
 #' @examples p_inci_sex(data)
 p_inci_sex <- function(data,region="Hong Kong"){
     iw <- incidence(data$raw_dt, interval = "6 months", date_index = onset_date, groups = sex)
-    plot(iw, fill = "sex", color = "white",border="grey",title = region)
+    plot(iw, fill = "sex", color = "white",border="grey",title = region,ylab="Number of cases")+
+        theme(axis.text.x = element_text(vjust = 0, hjust=0.5,size=18),
+              axis.text.y = element_text(size=18),
+              plot.title = element_text(size=22),
+              axis.title = element_text(size=18)
+        )
 }
 
 
@@ -227,12 +232,19 @@ p_inci_sex <- function(data,region="Hong Kong"){
 #'
 #' @examples p_inci_type(data)
 p_inci_type<-function(data,region="Hong Kong"){
-    dt_subtypes <- melt(data$raw_dt[,.(id,onset_date,subtype.als,subtype.pma,subtype.pbp,subtype.pls,subtype.others)],
+    dt_subtypes <- melt(data$raw_dt[,.(id,onset_date,
+                                       subtype.als,subtype.pma,subtype.pbp,subtype.pls,subtype.others)],
                         id.vars = c("id","onset_date"))[value==TRUE]
     icd_subtypes <- as.data.table(readxl::read_excel("data/codes_mnd.xlsx",sheet = "subtype"))
     icd_subtypes$abbr <- paste0("subtype.",icd_subtypes$abbr)
     dt_subtypes <- merge(dt_subtypes,icd_subtypes[,.(Dx,variable=abbr)],by="variable")
     iw_gp <- incidence(dt_subtypes,interval="6 months", date_index = onset_date, groups=Dx)
-    facet_plot(iw_gp, n_breaks = 3, color = "white",date_format = "%Y-%m",title=region,nrow = 2)
+    facet_plot(iw_gp, n_breaks = 3, color = "white",date_format = "%Y-%m",
+               title=region,nrow = 2,ylab="Number of cases")+
+        theme(axis.text.x = element_text(vjust = 0, hjust=0.5,size=18),
+              axis.text.y = element_text(size=18),
+              plot.title = element_text(size=22),
+              axis.title = element_text(size=18),
+              strip.text.x = element_text(size = 15))
 }
 

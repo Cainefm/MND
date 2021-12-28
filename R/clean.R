@@ -253,7 +253,7 @@ clean_4_survival <- function(demo,dx,rx,codes_sys,riluzole_name='riluzole|rilute
 get_px_dx <- function(data,dx,icd9){
     temp <- merge(data[,.(id,onset_date)],
                   dx[grepl(icd9["grepl"],codes,ignore.case = T),
-                        .(id,dx_date=ref_date)],
+                     .(id,dx_date=ref_date)],
                   all.y = T)[dx_date<onset_date,unique(id)]
     data[,c(paste0("hx.",icd9["Dx"])):=fifelse(id %in% temp,T,F)]
     message(icd9["Description"],"----",length(temp))
