@@ -15,6 +15,12 @@ run_sccs(
 )
 }
 \arguments{
+\item{demo}{the dataset with demographic information, including id, dob, dod, sex, onset_date. Pls check the data shall.}
+
+\item{rx}{the dataset with all prescription records, including id, drug name, date of prescription start and end, type of presciption (IP, OP, AE, Discharge). Pls check the data shall.}
+
+\item{ip}{the dataset with all in-hospitalization records, including id, date of adminssion, date of discharge, type of records (setting, IP, OP, AE). Pls check the data shall.}
+
 \item{target_drugs}{the drug name of riluzole. In hong kong, there are two type of drug names in HK： riluzole and riluteck}
 
 \item{obst}{the defined study observation date. Choose the earliest avaiable date with *Riluzole* in the hospital or approved date by FDA. For instance, 2001-8-24 in Hong Kong.}

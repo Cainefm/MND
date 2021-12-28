@@ -7,6 +7,10 @@
 clean_4_survival(demo, dx, codes_sys, ...)
 }
 \arguments{
+\item{demo}{the dataset with demographic information, including id, dob, dod, sex, onset_date. Pls check the data shall.}
+
+\item{dx}{the dataset with all diagnosis information, including id, codes, ref_date, setting. Pls check the data shall.}
+
 \item{codes_sys}{can be "icd9", "icd10", or "readcodes"}
 }
 \value{
@@ -14,4 +18,7 @@ clean_4_survival(demo, dx, codes_sys, ...)
 }
 \description{
 Create a dataset for survival and incidence calculation
+}
+\examples{
+clean_4_survival(demo, dx, codes_sys="icd9")
 }

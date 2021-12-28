@@ -1,9 +1,9 @@
 
 
 #' sccs for mnd study
-#' @param demo
-#' @param rx
-#' @param ip
+#' @param demo the dataset with demographic information, including id, dob, dod, sex, onset_date. Pls check the data shall.
+#' @param rx the dataset with all prescription records, including id, drug name, date of prescription start and end, type of presciption (IP, OP, AE, Discharge). Pls check the data shall.
+#' @param ip the dataset with all in-hospitalization records, including id, date of adminssion, date of discharge, type of records (setting, IP, OP, AE). Pls check the data shall.
 #' @param target_drugs the drug name of riluzole. In hong kong, there are two type of drug names in HK： riluzole and riluteck
 #' @param obst the defined study observation date. Choose the earliest avaiable date with *Riluzole* in the hospital or approved date by FDA. For instance, 2001-8-24 in Hong Kong.
 #' @param obed the defined study observation date. Default : 2019-12-31
@@ -97,16 +97,18 @@ sccs <- function(fml,...){
 
 #' Print only outcome for MND study
 #'
-#' @param x
+#' @param the sccs result
 #'
 #' @return
-#' @export
-#'
-#' @examples
 print.mndsccs <- function(x){
     print(x$res)
 }
 
+#' Keep digits for numbers
+#'
+#' @param x numbers
+#'
+#' @return
 show_digit<- function(x){
     return(sprintf(as.numeric(x),fmt="%#.2f"))
 }
@@ -116,8 +118,6 @@ show_digit<- function(x){
 #' @param x
 #'
 #' @return
-#'
-#' @examples
 get_inci_CI <- function(x){
     temp <- poisson.test(as.numeric(x[["stdN"]]),as.numeric(x[["pop_raw"]]))
     est <- temp[["estimate"]]*100000
@@ -132,15 +132,15 @@ get_inci_CI <- function(x){
 
 #' run analysis for incidence
 #'
-#' @param demo
-#' @param dx
-#' @param region
-#' @param codes_sys
+#' @param demo the dataset with demographic information, including id, dob, dod, sex, onset_date. Pls check the data shall.
+#' @param dx the dataset with all diagnosis information, including id, codes, ref_date, setting. Pls check the data shall.
+#' @param region the region. "hk", "tw" or "kr"
+#' @param codes_sys the code system. "icd9", "icd10", or "readcode"
 #'
 #' @return
 #' @export
 #'
-#' @examples
+#' @examples run_incidence(demo, dx)
 run_incidence <- function(demo, dx, region="hk",codes_sys = "icd9"){
     dx_inci <- clean_4_survival(demo=demo,dx=dx,codes_sys)
 
@@ -180,13 +180,13 @@ run_incidence <- function(demo, dx, region="hk",codes_sys = "icd9"){
 
 #' Plot the figure of incidence
 #'
-#' @param data
-#' @param region
+#' @param data the first element from dataset generated from run_incidence
+#' @param region the site name which will be shown in the plot
 #'
 #' @return
 #' @export
 #'
-#' @examples
+#' @examples p_inci(data$std_inci)
 p_inci <- function(data,region="Hong Kong"){
     ggplot(data,aes(x=year_onset,y=est,group=1))+
         geom_line()+theme_light()+

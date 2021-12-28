@@ -7,7 +7,7 @@
 \method{print}{mndsccs}(x)
 }
 \arguments{
-\item{x}{}
+\item{the}{sccs result}
 }
 \value{
 

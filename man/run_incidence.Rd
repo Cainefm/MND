@@ -7,11 +7,20 @@
 run_incidence(demo, dx, region = "hk", codes_sys = "icd9")
 }
 \arguments{
-\item{codes_sys}{}
+\item{demo}{the dataset with demographic information, including id, dob, dod, sex, onset_date. Pls check the data shall.}
+
+\item{dx}{the dataset with all diagnosis information, including id, codes, ref_date, setting. Pls check the data shall.}
+
+\item{region}{the region. "hk", "tw" or "kr"}
+
+\item{codes_sys}{the code system. "icd9", "icd10", or "readcode"}
 }
 \value{
 
 }
 \description{
 run analysis for incidence
+}
+\examples{
+run_incidence(demo, dx)
 }

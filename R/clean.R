@@ -30,8 +30,8 @@ shrink_interval <- function(data,st,ed,gap=1){
 #'
 #' @description Combine the exposure (Riluzole history) and outcome (Hospitalization records) for SCCS study design.
 #' @param demo the dataset with demographic information, including id, dob, dod, sex, onset_date. Pls check the data shall.
-#' @param ip the dataset with all in-hospitalization records, including id, date of adminssion, date of discharge, type of records (setting, IP, OP, AE). Pls check the data shall.
 #' @param rx the dataset with all prescription records, including id, drug name, date of prescription start and end, type of presciption (IP, OP, AE, Discharge). Pls check the data shall.
+#' @param ip the dataset with all in-hospitalization records, including id, date of adminssion, date of discharge, type of records (setting, IP, OP, AE). Pls check the data shall.
 #' @param riluzole_name the name in your database stands for riluzole.
 #' @return a combined data set in data table format. One patients may have multiple rows of records.
 #' @import data.table
@@ -159,14 +159,14 @@ get_subtype <- function(data,icd_subtypes_temp){
 
 #' Create a dataset for survival and incidence calculation
 #'
-#' @param dx
-#' @param demo
+#' @param demo the dataset with demographic information, including id, dob, dod, sex, onset_date. Pls check the data shall.
+#' @param dx the dataset with all diagnosis information, including id, codes, ref_date, setting. Pls check the data shall.
 #' @param codes_sys can be "icd9", "icd10", or "readcodes"
 #'
 #' @return
 #' @export
 #'
-#' @examples
+#' @examples clean_4_survival(demo, dx, codes_sys="icd9")
 clean_4_survival <- function(demo,dx,codes_sys,...){
 
     if(codes_sys=="icd9"){
