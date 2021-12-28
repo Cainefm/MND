@@ -161,13 +161,15 @@ get_subtype <- function(data,icd_subtypes_temp){
 #'
 #' @param demo the dataset with demographic information, including id, dob, dod, sex, onset_date. Pls check the data shall.
 #' @param dx the dataset with all diagnosis information, including id, codes, ref_date, setting. Pls check the data shall.
+#' @param rx the dataset with all prescription records, including id, drug name, date of prescription start and end, type of presciption (IP, OP, AE, Discharge). Pls check the data shall.
 #' @param codes_sys can be "icd9", "icd10", or "readcodes"
+#' @param riluzole_name the name in your database stands for riluzole.
 #'
 #' @return
 #' @export
 #'
 #' @examples clean_4_survival(demo, dx, codes_sys="icd9")
-clean_4_survival <- function(demo,dx,codes_sys,...){
+clean_4_survival <- function(demo,dx,rx,codes_sys,riluzole_name='riluzole|riluteck',...){
 
     if(codes_sys=="icd9"){
         codes_defined <- "^335.2$|^335.2[01249]"
@@ -211,6 +213,51 @@ clean_4_survival <- function(demo,dx,codes_sys,...){
     df_surv[,year_onset:=year(onset_date)]
     df_surv[,time_to_event:=as.numeric(obs.deadline-onset_date)]
     df_surv <- df_surv[time_to_event>=0 & onset_date>=ymd("1994-01-01")]
+
+    # get past hx
+    codes_icd <- setDT(read_xlsx("./data/codes_mnd.xlsx",sheet = "hx"))
+    codes_icd <- codes_icd[!is.na(grepl) & !is.na(Description)]
+    message("================================\nobtain past hx for the cohort")
+    apply(codes_icd,1,function(x) get_px_dx(df_surv,dx,x))
+    # add cci
+    df_surv[, score.cci := (hx.mi+hx.chf+hx.pvd+hx.cbd+hx.copd+hx.dementia+hx.paralysis+(hx.dm_com0&!hx.dm_com1)+hx.dm_com1*2+hx.crf*2+(hx.liver_mild&!hx.liver_modsev)+hx.liver_modsev*3+hx.ulcers+hx.ra+hx.aids*6+hx.cancer*2+hx.cancer_mets*6)]
+    df_surv[, score.cci := (score.cci+
+                                ifelse(age_adm>=50&age_adm<60,1,0)+
+                                ifelse(age_adm>=60&age_adm<70,2,0)+
+                                ifelse(age_adm>=70&age_adm<80,3,0)+
+                                ifelse(age_adm>=80,4,0))]
+
+    # add prescription indicator
+    rx_riluzole<- shrink_interval(rx[grepl(riluzole_name,drug_name,ignore.case = T) &
+                                         !setting %in% c("I")],"date_rx_st","date_rx_end")
+    ppl_hv_riluzole <- merge(rx_riluzole,
+                             df_surv[,.(id,onset_date,obs.deadline)],"id")[
+                                 date_rx_st>=onset_date & date_rx_st<obs.deadline]
+
+    df_surv[,riluzole:=fifelse(id %in% ppl_hv_riluzole$id,T,F)]
+
     return(df_surv)
 }
+
+
+#' Obtain the past hx
+#'
+#' @param data the data after initial cleanning
+#' @param dx the dataset with all diagnosis information, including id, codes, ref_date, setting. Pls check the data shall.
+#' @param icd9
+#'
+#' @return
+#' @export
+#'
+#' @examples get_px_dx(database,dx, icd9)
+get_px_dx <- function(data,dx,icd9){
+    temp <- merge(data[,.(id,onset_date)],
+                  dx[grepl(icd9["grepl"],codes,ignore.case = T),
+                        .(id,dx_date=ref_date)],
+                  all.y = T)[dx_date<onset_date,unique(id)]
+    data[,c(paste0("hx.",icd9["Dx"])):=fifelse(id %in% temp,T,F)]
+    message(icd9["Description"],"----",length(temp))
+}
+
+
 

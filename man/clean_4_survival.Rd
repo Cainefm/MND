@@ -4,14 +4,25 @@
 \alias{clean_4_survival}
 \title{Create a dataset for survival and incidence calculation}
 \usage{
-clean_4_survival(demo, dx, codes_sys, ...)
+clean_4_survival(
+  demo,
+  dx,
+  rx,
+  codes_sys,
+  riluzole_name = "riluzole|riluteck",
+  ...
+)
 }
 \arguments{
 \item{demo}{the dataset with demographic information, including id, dob, dod, sex, onset_date. Pls check the data shall.}
 
 \item{dx}{the dataset with all diagnosis information, including id, codes, ref_date, setting. Pls check the data shall.}
 
+\item{rx}{the dataset with all prescription records, including id, drug name, date of prescription start and end, type of presciption (IP, OP, AE, Discharge). Pls check the data shall.}
+
 \item{codes_sys}{can be "icd9", "icd10", or "readcodes"}
+
+\item{riluzole_name}{the name in your database stands for riluzole.}
 }
 \value{
 

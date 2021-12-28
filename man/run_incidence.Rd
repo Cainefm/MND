@@ -4,12 +4,14 @@
 \alias{run_incidence}
 \title{run analysis for incidence}
 \usage{
-run_incidence(demo, dx, region = "hk", codes_sys = "icd9")
+run_incidence(demo, dx, rx, region = "hk", codes_sys = "icd9")
 }
 \arguments{
 \item{demo}{the dataset with demographic information, including id, dob, dod, sex, onset_date. Pls check the data shall.}
 
 \item{dx}{the dataset with all diagnosis information, including id, codes, ref_date, setting. Pls check the data shall.}
+
+\item{rx}{the dataset with all prescription records, including id, drug name, date of prescription start and end, type of presciption (IP, OP, AE, Discharge). Pls check the data shall.}
 
 \item{region}{the region. "hk", "tw" or "kr"}
 

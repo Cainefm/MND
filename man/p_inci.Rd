@@ -7,7 +7,7 @@
 p_inci(data, region = "Hong Kong")
 }
 \arguments{
-\item{data}{the first element from dataset generated from run_incidence}
+\item{data}{the dataset generated from run_incidence}
 
 \item{region}{the site name which will be shown in the plot}
 }

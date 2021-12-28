@@ -134,6 +134,7 @@ get_inci_CI <- function(x){
 #'
 #' @param demo the dataset with demographic information, including id, dob, dod, sex, onset_date. Pls check the data shall.
 #' @param dx the dataset with all diagnosis information, including id, codes, ref_date, setting. Pls check the data shall.
+#' @param rx the dataset with all prescription records, including id, drug name, date of prescription start and end, type of presciption (IP, OP, AE, Discharge). Pls check the data shall.
 #' @param region the region. "hk", "tw" or "kr"
 #' @param codes_sys the code system. "icd9", "icd10", or "readcode"
 #'
@@ -141,8 +142,8 @@ get_inci_CI <- function(x){
 #' @export
 #'
 #' @examples run_incidence(demo, dx)
-run_incidence <- function(demo, dx, region="hk",codes_sys = "icd9"){
-    dx_inci <- clean_4_survival(demo=demo,dx=dx,codes_sys)
+run_incidence <- function(demo, dx, rx, region="hk",codes_sys = "icd9"){
+    dx_inci <- clean_4_survival(demo=demo,dx=dx,rx = rx, codes_sys)
 
     raw_pop <- setDT(read_xlsx("./data/codes_mnd.xlsx", sheet=paste0(region,"_pop")))
     raw_pop <- melt(raw_pop,id.vars = "Age")
@@ -180,7 +181,7 @@ run_incidence <- function(demo, dx, region="hk",codes_sys = "icd9"){
 
 #' Plot the figure of incidence
 #'
-#' @param data the first element from dataset generated from run_incidence
+#' @param data the dataset generated from run_incidence
 #' @param region the site name which will be shown in the plot
 #'
 #' @return
@@ -188,7 +189,7 @@ run_incidence <- function(demo, dx, region="hk",codes_sys = "icd9"){
 #'
 #' @examples p_inci(data$std_inci)
 p_inci <- function(data,region="Hong Kong"){
-    ggplot(data,aes(x=year_onset,y=est,group=1))+
+    ggplot(data$std_inci,aes(x=year_onset,y=est,group=1))+
         geom_line()+theme_light()+
         xlab("Onset year")+
         ylab("Age standardized MND incidence \nby year per 100,000 population")+
@@ -201,9 +202,37 @@ p_inci <- function(data,region="Hong Kong"){
 }
 
 
-p_inci_sg <- function(x){
-    iw <- incidence(x, interval = "6 months", date_index = onset_date, groups = sex)
-    plot(iw, fill = "sex", color = "white",border="grey",title = "Hong Kong")
+#' Plot the figure of incidence by age
+#'
+#' @param data the dataset generated from run_incidence
+#'
+#' @return
+#' @export
+#'
+#' @examples p_inci_sex(data)
+p_inci_sex <- function(data,region="Hong Kong"){
+    iw <- incidence(data$raw_dt, interval = "6 months", date_index = onset_date, groups = sex)
+    plot(iw, fill = "sex", color = "white",border="grey",title = region)
 }
 
+
+
+#' Plot the figure of incidence by subgroup
+#'
+#' @param data the dateset generated from run_incidence
+#' @param region the site name which will be shown in the plot
+#'
+#' @return
+#' @export
+#'
+#' @examples p_inci_type(data)
+p_inci_type<-function(data,region="Hong Kong"){
+    dt_subtypes <- melt(data$raw_dt[,.(id,onset_date,subtype.als,subtype.pma,subtype.pbp,subtype.pls,subtype.others)],
+                        id.vars = c("id","onset_date"))[value==TRUE]
+    icd_subtypes <- as.data.table(readxl::read_excel("data/codes_mnd.xlsx",sheet = "subtype"))
+    icd_subtypes$abbr <- paste0("subtype.",icd_subtypes$abbr)
+    dt_subtypes <- merge(dt_subtypes,icd_subtypes[,.(Dx,variable=abbr)],by="variable")
+    iw_gp <- incidence(dt_subtypes,interval="6 months", date_index = onset_date, groups=Dx)
+    facet_plot(iw_gp, n_breaks = 3, color = "white",date_format = "%Y-%m",title=region,nrow = 2)
+}
 
