@@ -50,7 +50,7 @@ shrink_interval <- function(data,st,ed,gap=1){
 #' 2665:  9903734   F 1955-07-02 2018-11-28 2017-11-28 2018-07-25  2018-11-20 2017-11-27 2017-11-28
 #' 2666:  9903734   F 1955-07-02 2018-11-28 2017-11-28 2018-07-25  2018-11-20 2018-07-30 2018-08-10
 #' 2667:  9903734   F 1955-07-02 2018-11-28 2017-11-28 2018-07-25  2018-11-20 2018-10-31 2018-11-02
-get_DT_Exposure_Endpoint <- function(demo, rx, ip,riluzole_name='riluzole|riluteck',...){
+get_DT_Exposure_Endpoint <- function(demo, rx, ip,riluzole_name,...){
     rx_riluzole<- shrink_interval(rx[grepl(riluzole_name,drug_name,ignore.case = T) &
                                          !setting %in% c("I")],"date_rx_st","date_rx_end")
     rx_earliest <- rx_riluzole[,.(earliest_rx=min(date_rx_st)),id][,unique(.SD)]
@@ -75,7 +75,7 @@ get_DT_Exposure_Endpoint <- function(demo, rx, ip,riluzole_name='riluzole|rilute
 #' @export
 #'
 #' @examples no example
-get_DT_SCCS <- function(data,...){
+get_DT_SCCS <- function(data,obst,obed,...){
     df_mnd <- data[,`:=`(obst=pmax(pmin(onset_date %m-% years(1),
                                         earliest_rx %m-% years(1),na.rm=T),
                                    lubridate::ymd(obst),na.rm = T),
@@ -184,7 +184,7 @@ clean_4_survival <- function(demo,dx,rx,codes_sys,riluzole_name='riluzole|rilute
     temp_dx <- copy(dx)
     setorder(temp_dx,"id","ref_date")
     temp_dx <- temp_dx[grepl(codes_defined,codes),.SD[ref_date==min(ref_date)],id
-                       ][,unique(.SD)][,.(id,onset_date=ref_date,codes=codes)]
+    ][,unique(.SD)][,.(id,onset_date=ref_date,codes=codes)]
     temp_dx_codes <- dcast(temp_dx,id+onset_date~.,value.var = "codes",fun.aggregate = function(x) paste(unique(x),collapse = ","))
     setnames(temp_dx_codes,".","codes")
 

@@ -11,12 +11,14 @@
 #' @export
 #'
 #' @examples run_sccs()
-run_sccs <- function(demo, rx, ip, target_drugs='riluzole|riluteck',
-                     obst="2001-08-24", obed="2018-12-31", ...){
+run_sccs <- function(demo, rx, ip,
+                     riluzole_name='riluzole|riluteck',
+                     obst="2001-08-24",
+                     obed="2018-12-31",...){
     message("merge exposure and outcome datasets")
     message(nrow(demo)," in the cohort","\n========================\n\n")
-    dt_combined <- get_DT_Exposure_Endpoint(demo,rx,ip,...)
-    dt_sccs <- get_DT_SCCS(dt_combined,...)
+    dt_combined <- get_DT_Exposure_Endpoint(demo,rx,ip,riluzole_name,...)
+    dt_sccs <- get_DT_SCCS(dt_combined,obst,obed,...)
     message("After cleanning, count of participants for sccs:\n", dt_sccs[,uniqueN(id)],"\n========================\n\n")
     ageq <- floor(seq(20,90,10)*365)
     dt_sccs$id <- as.numeric(dt_sccs$id)
@@ -24,23 +26,56 @@ run_sccs <- function(demo, rx, ip, target_drugs='riluzole|riluteck',
     dt_sccs$dob_dmy <- as.numeric(format(dt_sccs$dob,"%d%m%Y")) # this is for version 1.4 or above
     dob_dmy_model <- dt_sccs[,.(id,event,dob_dmy)][,unique(.SD)][,dob_dmy] # this is the dob for previous SCCS package, with version less than 1.3
     result <- sccs(event ~ strx_30b + strx_0a + strx_30a + strx_60a + strx_90a+ strx_120a +
-                                   strx_150a +strx_180a +
-                                   age + season,
-                               indiv = id,
-                               astart = obst,
-                               aend = obed,
-                               aevent = event,
-                               adrug = list(strx_30b,strx_0a, strx_30a,
-                                            strx_60a,strx_90a,strx_120a,
-                                            strx_150a, strx_180a),
-                               aedrug = list(edrx_30b,edrx_0a,edrx_30a,
-                                             edrx_60a,edrx_90a,edrx_120a,
-                                             edrx_150a, edrx_180a),
-                               dataformat = "stack", agegrp = ageq, seasongrp = c(0103,0105,0109,0111),
-                               #    dob=dob_dmy, # for sccs version 1.5 or above
-                               dob=dob_dmy_model, # for sccs version 1.3 only
-                               data = as.data.frame(dt_sccs))
+                       strx_150a +strx_180a +
+                       age + season,
+                   indiv = id,
+                   astart = obst,
+                   aend = obed,
+                   aevent = event,
+                   adrug = list(strx_30b,strx_0a, strx_30a,
+                                strx_60a,strx_90a,strx_120a,
+                                strx_150a, strx_180a),
+                   aedrug = list(edrx_30b,edrx_0a,edrx_30a,
+                                 edrx_60a,edrx_90a,edrx_120a,
+                                 edrx_150a, edrx_180a),
+                   dataformat = "stack", agegrp = ageq, seasongrp = c(0103,0105,0109,0111),
+                   # dob=dob_dmy, # for sccs version 1.5 or above
+                   dob13=dob_dmy_model, # for sccs version 1.3 only
+                   data = as.data.frame(dt_sccs),...)
     return(result)
+}
+
+#' Standardsccs with formated output
+#'
+#' @param fml the formula in standardsccs
+#'
+#' @return
+#' @export
+#'
+#' @examples sccs()
+sccs <- function(fml,dob13,...){
+    nrow(dob13)
+    out <- list()
+    fit_sccs <- standardsccs(formula = fml,dob=dob13,...)
+    out$fit <- fit_sccs
+    dt_sccs <- setDT(formatdata(dob=dob13,...))
+    colnm <- get_colnm(exp,...)
+    dt_sccs <- dt_sccs[,lapply(.SD,function(x) as.numeric(as.character(x)))]
+    fml <- update(fml,.~. - age-season)
+    dt_sccs[, ctrl0 := as.numeric(eval(fml[[3]])==0)]
+    out$dt <- dt_sccs
+    n_py <- rbindlist(lapply(c(colnm,"ctrl0"), function(x) dt_sccs[get(x)==1,.(n_event=sum(event),PY=sxd(sum(interval)/365.25,n=2))]))
+    n_py <- cbind(period=c(colnm,"ctrl0"),n_py)
+    out$n_py <- n_py
+    irr <- data.table(fit_sccs$conf.int, keep.rownames=T
+    )[, .(period=sub("1$","",rn), adj.IRR=paste0(sxd(`exp(coef)`,n=2)," (",
+                                                 sxd(`lower .95`,n=2),"-",
+                                                 sxd(`upper .95`,n=2),")"))]
+    out$irr <- irr
+    irr <-  merge(n_py,irr,by="period",all.x = T,sort=F)
+    out$res <- irr
+    out <- structure(out,class=c("mndsccs","list"))
+    return(out)
 }
 
 
@@ -62,44 +97,13 @@ get_colnm <- function(adrug,data,...){
     return(colnames(eval(parse(text=call.obj),data)))
 }
 
-#' Standardsccs with formated output
-#'
-#' @param fml the formula in standardsccs
-#' @param ... others
-#'
-#' @return
-#'
-#' @examples sccs()
-sccs <- function(fml,...){
-    out <- list()
-    fit_sccs <- standardsccs(formula = fml,...)
-    out$fit <- fit_sccs
-    dt_sccs <- setDT(formatdata(...))
-    colnm <- get_colnm(exp,...)
-    dt_sccs <- dt_sccs[,lapply(.SD,function(x) as.numeric(as.character(x)))]
-    fml <- update(fml,.~. - age-season)
-    dt_sccs[, ctrl0 := as.numeric(eval(fml[[3]])==0)]
-    out$dt <- dt_sccs
-    n_py <- rbindlist(lapply(c(colnm,"ctrl0"), function(x) dt_sccs[get(x)==1,.(n_event=sum(event),PY=sxd(sum(interval)/365.25,n=2))]))
-    n_py <- cbind(period=c(colnm,"ctrl0"),n_py)
-    out$n_py <- n_py
-    irr <- data.table(fit_sccs$conf.int, keep.rownames=T
-    )[, .(period=sub("1$","",rn), adj.IRR=paste0(sxd(`exp(coef)`,n=2)," (",
-                                                 sxd(`lower .95`,n=2),"-",
-                                                 sxd(`upper .95`,n=2),")"))]
-    out$irr <- irr
-    irr <-  merge(n_py,irr,by="period",all.x = T,sort=F)
-    out$res <- irr
-    out <- structure(out,class=c("mndsccs","list"))
-    return(out)
-}
-
 
 #' Print only outcome for MND study
 #'
 #' @param the sccs result
 #'
 #' @return
+#' @export
 print.mndsccs <- function(x){
     print(x$res)
 }

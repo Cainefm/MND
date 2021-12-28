@@ -8,7 +8,7 @@ run_sccs(
   demo,
   rx,
   ip,
-  target_drugs = "riluzole|riluteck",
+  riluzole_name = "riluzole|riluteck",
   obst = "2001-08-24",
   obed = "2018-12-31",
   ...
@@ -21,11 +21,11 @@ run_sccs(
 
 \item{ip}{the dataset with all in-hospitalization records, including id, date of adminssion, date of discharge, type of records (setting, IP, OP, AE). Pls check the data shall.}
 
-\item{target_drugs}{the drug name of riluzole. In hong kong, there are two type of drug names in HK： riluzole and riluteck}
-
 \item{obst}{the defined study observation date. Choose the earliest avaiable date with *Riluzole* in the hospital or approved date by FDA. For instance, 2001-8-24 in Hong Kong.}
 
 \item{obed}{the defined study observation date. Default : 2019-12-31}
+
+\item{target_drugs}{the drug name of riluzole. In hong kong, there are two type of drug names in HK： riluzole and riluteck}
 }
 \value{
 

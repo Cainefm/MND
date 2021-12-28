@@ -4,12 +4,10 @@
 \alias{sccs}
 \title{Standardsccs with formated output}
 \usage{
-sccs(fml, ...)
+sccs(fml, dob13, ...)
 }
 \arguments{
 \item{fml}{the formula in standardsccs}
-
-\item{...}{others}
 }
 \value{
 

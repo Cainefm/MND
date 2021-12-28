@@ -4,7 +4,7 @@
 \alias{get_DT_SCCS}
 \title{Genrate the dataset and Cleaning for SCCS}
 \usage{
-get_DT_SCCS(data, ...)
+get_DT_SCCS(data, obst, obed, ...)
 }
 \arguments{
 \item{data}{the dataset including exposure and endpoint information}
