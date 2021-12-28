@@ -1,21 +1,16 @@
 ## Epidemiology study of Motor neuron disease with the collaboration in the Neurogen
 
-=============
 
 <img src="https://img.shields.io/badge/Project-Preparing-red.svg" alt="Study Status: Started">
 
 - Study type: **Epidemiology study**
 - Tags: **Common data model**, **MND**
-- Study lead: *Celine Chui*, *FAN Min*
 - Study sites:
-  - **Hong Kong** : *FAN Min*
-  - **Tai Wan** ：**
-  - **Korea** ：**[Ju-Young Shin](https://skb.skku.edu/eng_pharm/intro/faculty_pharmacy.do?mode=view&perId=LZStrIYVgqgzg6gKgdgTwMYFMCyBFAmkgnMAZQCk4AOAaQwF4qg%20&)**, **[Sungho Bea]()**
-- Study start date: **Jun, 2021**
-- Study end date: **-**
-- Protocol:
+  - **Hong Kong** : **FAN Min**
+  - **Tai Wan** ：**Edward Lai**，**Daniel Tsai**
+  - **Korea** ：**Ju-Young Shin**, **Sungho Bea**
+- Protocol: v1.2 
 - Publications: **-**
-- Results explorer: **-**
 
 # Requirements
 - A database in the data shall format provided in protocol
@@ -64,11 +59,22 @@
 6. For incidence estimation.
 
     ```r
-     run_inci()
+     site_inci <- run_incidence(demo, dx)
+     # the standardized incidence
+     site_inci$std_inci
+     # the raw data for incidence
+     site_inci$raw_dt
     ```
+
+6.1 Figure plotting
+    ```r
+     plot_inci(site_inci$std_inci)
+    ```
+    ![image](https://user-images.githubusercontent.com/20833144/147521882-81b3577f-fff9-4df4-b2b3-fedacc59e181.png)
 
 5. For sccs estimation:
     ```r
+     plot(
      run_sccs(demo,rx,ip)
     ```
 
