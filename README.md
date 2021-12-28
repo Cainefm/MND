@@ -6,8 +6,8 @@
 - Study type: **Epidemiology study**
 - Tags: **Common data model**, **MND**
 - Study sites:
-  - **Hong Kong** : **FAN Min**
-  - **Tai Wan** ：**Edward Lai**，**Daniel Tsai**
+  - **Hong Kong** : **Celine Chui**, **FAN Min**
+  - **Tai Wan** ：**Edward Lai**, **Daniel Tsai**
   - **Korea** ：**Ju-Young Shin**, **Sungho Bea**
 - Protocol: v1.2 
 - Publications: **-**
