@@ -15,11 +15,11 @@ run_sccs <- function(demo, rx, ip,
                      riluzole_name='riluzole|riluteck',
                      obst="2001-08-24",
                      obed="2018-12-31",...){
-    message("merge exposure and outcome datasets")
-    message(nrow(demo)," in the cohort","\n========================\n\n")
+    message("Data Cleaning for SCCS")
+#    message(nrow(demo)," in the cohort","\n========================\n\n")
     dt_combined <- get_DT_Exposure_Endpoint(demo,rx,ip,riluzole_name,...)
     dt_sccs <- get_DT_SCCS(dt_combined,obst,obed,...)
-    message("After cleanning, count of participants for sccs:\n", dt_sccs[,uniqueN(id)],"\n========================\n\n")
+    message("\n==================\nAfter cleanning, count of participants for sccs:\n", dt_sccs[,uniqueN(id)])
     ageq <- floor(seq(20,90,10)*365)
     dt_sccs$id <- as.numeric(dt_sccs$id)
     setorder(dt_sccs,id,event,date_rx_st)

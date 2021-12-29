@@ -39,28 +39,32 @@ shrink_interval <- function(data,st,ed,gap=1){
 #'
 #' @examples get_DT_Exposure_Endpoint(demo,ip,rx)
 #'             id sex        dob        dod onset_date date_rx_st date_rx_end   date_adm   date_dsg
-#'    1: 10038681   M 1966-09-10 2017-06-06 2015-07-23 2013-05-31  2014-06-02 2015-07-21 2015-07-23
-#'    2: 10038681   M 1966-09-10 2017-06-06 2015-07-23 2013-05-31  2014-06-02 2016-10-17 2016-10-22
-#'    3: 10038681   M 1966-09-10 2017-06-06 2015-07-23 2013-05-31  2014-06-02 2017-01-24 2017-01-27
-#'    4: 10038681   M 1966-09-10 2017-06-06 2015-07-23 2013-05-31  2014-06-02 2017-03-03 2017-03-31
-#'    5: 10038681   M 1966-09-10 2017-06-06 2015-07-23 2013-05-31  2014-06-02 2017-04-10 2017-04-10
+#'    1:        1   M 1966-09-10 2017-06-06 2015-07-23 2013-05-31  2014-06-02 2015-07-21 2015-07-23
+#'    2:        1   M 1966-09-10 2017-06-06 2015-07-23 2013-05-31  2014-06-02 2016-10-17 2016-10-22
+#'    3:        1   M 1966-09-10 2017-06-06 2015-07-23 2013-05-31  2014-06-02 2017-01-24 2017-01-27
+#'    4:        1   M 1966-09-10 2017-06-06 2015-07-23 2013-05-31  2014-06-02 2017-03-03 2017-03-31
+#'    5:        1   M 1966-09-10 2017-06-06 2015-07-23 2013-05-31  2014-06-02 2017-04-10 2017-04-10
 #' ---
-#' 2663:  9903734   F 1955-07-02 2018-11-28 2017-11-28 2018-05-28  2018-07-22 2018-07-30 2018-08-10
-#' 2664:  9903734   F 1955-07-02 2018-11-28 2017-11-28 2018-05-28  2018-07-22 2018-10-31 2018-11-02
-#' 2665:  9903734   F 1955-07-02 2018-11-28 2017-11-28 2018-07-25  2018-11-20 2017-11-27 2017-11-28
-#' 2666:  9903734   F 1955-07-02 2018-11-28 2017-11-28 2018-07-25  2018-11-20 2018-07-30 2018-08-10
-#' 2667:  9903734   F 1955-07-02 2018-11-28 2017-11-28 2018-07-25  2018-11-20 2018-10-31 2018-11-02
+#' 2663:    88888   F 1955-07-02 2018-11-28 2017-11-28 2018-05-28  2018-07-22 2018-07-30 2018-08-10
+#' 2664:    88888   F 1955-07-02 2018-11-28 2017-11-28 2018-05-28  2018-07-22 2018-10-31 2018-11-02
+#' 2665:    88888   F 1955-07-02 2018-11-28 2017-11-28 2018-07-25  2018-11-20 2017-11-27 2017-11-28
+#' 2666:    88888   F 1955-07-02 2018-11-28 2017-11-28 2018-07-25  2018-11-20 2018-07-30 2018-08-10
+#' 2667:    88888   F 1955-07-02 2018-11-28 2017-11-28 2018-07-25  2018-11-20 2018-10-31 2018-11-02
 get_DT_Exposure_Endpoint <- function(demo, rx, ip,riluzole_name,...){
     rx_riluzole<- shrink_interval(rx[grepl(riluzole_name,drug_name,ignore.case = T) &
                                          !setting %in% c("I")],"date_rx_st","date_rx_end")
+    message("==================\nNumber of ppl: using Riluzole (Not IP)\n",
+            rx_riluzole[,uniqueN(id)])
     rx_earliest <- rx_riluzole[,.(earliest_rx=min(date_rx_st)),id][,unique(.SD)]
-
     ip_riluzole<- shrink_interval(ip[id %in% demo$id & id %in% rx_riluzole$id],"date_adm","date_dsg",gap = 7)
+    message("==================\nNumber of ppl: having admission records:\n",
+            ip_riluzole[,uniqueN(id)])
     rx_ip <- merge(rx_riluzole[,indx:=NULL],
                    ip_riluzole[,indx:=NULL],by="id",allow.cartesian = T)
-
     rx_ip <- merge(rx_ip,rx_earliest,by="id",all.x=T)
     demo_rx_ip<-merge(demo,rx_ip,by="id")
+    message("==================\nNumber of ppl: with Demo information\n",
+            rx_ip[,uniqueN(id)])
     return(demo_rx_ip)
 }
 
@@ -91,6 +95,8 @@ get_DT_SCCS <- function(data,obst,obed,...){
                            edrx=as.numeric(date_rx_end-dob))]
 
     df_mnd <- df_mnd[strx>=obst & strx<= obed & event >=obst & event <= obed]
+    message("==================\nNumber of ppl: excluding ppl not in the study period\n",
+            df_mnd[,uniqueN(id)])
     # for more than one rx periods:
     last_rx_time <- unique(df_mnd[,.(id,strx,edrx)])[,last_rx_ed:=as.numeric(shift(edrx,n = 1,fill = NA,type = "lag")),.(id)]
 
