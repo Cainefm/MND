@@ -227,6 +227,7 @@ clean_4_survival <- function(demo,dx,rx,codes_sys,riluzole_name='riluzole|rilute
                                 ifelse(age_adm>=70&age_adm<80,3,0)+
                                 ifelse(age_adm>=80,4,0))]
 
+    message("\n================================\nobtain riluzole indicator")
     # add prescription indicator
     rx_riluzole<- shrink_interval(rx[grepl(riluzole_name,drug_name,ignore.case = T) &
                                          !setting %in% c("I")],"date_rx_st","date_rx_end")

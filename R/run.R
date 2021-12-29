@@ -42,6 +42,7 @@ run_sccs <- function(demo, rx, ip,
                    # dob=dob_dmy, # for sccs version 1.5 or above
                    dob13=dob_dmy_model, # for sccs version 1.3 only
                    data = as.data.frame(dt_sccs),...)
+    #result <- append(dt_raw=dt_sccs,result)
     return(result)
 }
 
@@ -54,7 +55,6 @@ run_sccs <- function(demo, rx, ip,
 #'
 #' @examples sccs()
 sccs <- function(fml,dob13,...){
-    nrow(dob13)
     out <- list()
     fit_sccs <- standardsccs(formula = fml,dob=dob13,...)
     out$fit <- fit_sccs
@@ -63,7 +63,7 @@ sccs <- function(fml,dob13,...){
     dt_sccs <- dt_sccs[,lapply(.SD,function(x) as.numeric(as.character(x)))]
     fml <- update(fml,.~. - age-season)
     dt_sccs[, ctrl0 := as.numeric(eval(fml[[3]])==0)]
-    out$dt <- dt_sccs
+    out$dt_formated <- dt_sccs
     n_py <- rbindlist(lapply(c(colnm,"ctrl0"), function(x) dt_sccs[get(x)==1,.(n_event=sum(event),PY=sxd(sum(interval)/365.25,n=2))]))
     n_py <- cbind(period=c(colnm,"ctrl0"),n_py)
     out$n_py <- n_py
@@ -78,60 +78,6 @@ sccs <- function(fml,dob13,...){
     return(out)
 }
 
-
-
-#' Print with rounding, with 0 at the end if appropriate
-#'
-#' @param x number
-#' @param n digits in round
-#'
-#' @return
-#'
-#' @examples sxd(2.01999,2)
-sxd <- function(x,n=2){
-    sprintf(paste0("%.",n,"f"),round(x,n))
-}
-
-get_colnm <- function(adrug,data,...){
-    call.obj <- gsub("list","cbind",deparse(substitute(adrug)))
-    return(colnames(eval(parse(text=call.obj),data)))
-}
-
-
-#' Print only outcome for MND study
-#'
-#' @param the sccs result
-#'
-#' @return
-#' @export
-print.mndsccs <- function(x){
-    print(x$res)
-}
-
-#' Keep digits for numbers
-#'
-#' @param x numbers
-#'
-#' @return
-show_digit<- function(x){
-    return(sprintf(as.numeric(x),fmt="%#.2f"))
-}
-
-#' Inci Ci calculation
-#'
-#' @param x
-#'
-#' @return
-get_inci_CI <- function(x){
-    temp <- poisson.test(as.numeric(x[["stdN"]]),as.numeric(x[["pop_raw"]]))
-    est <- temp[["estimate"]]*100000
-    est_l <- temp$conf.int[2]*100000
-    est_h <- temp$conf.int[1]*100000
-    est_cb <- paste0(show_digit(est)," (",
-                     show_digit(est_l),"-",
-                     show_digit(est_h),")")
-    return(data.frame(est,est_l,est_h,est_cb))
-}
 
 
 #' run analysis for incidence
@@ -163,15 +109,15 @@ run_incidence <- function(demo, dx, rx, region="hk",codes_sys = "icd9"){
     setorder(incident_raw,Age,year_onset)
 
     incident_raw <- merge(incident_raw,
-                         raw_pop,
-                         by=c("Age","year_onset"),all.y=T)
+                          raw_pop,
+                          by=c("Age","year_onset"),all.y=T)
     incident_raw <- merge(incident_raw,
-                         std_pop[,.(Age,pop_std=`Standard For SEER*Stat`,pop_std_ratio=`WHO std pop`)],
-                         by=c("Age"))
+                          std_pop[,.(Age,pop_std=`Standard For SEER*Stat`,pop_std_ratio=`WHO std pop`)],
+                          by=c("Age"))
     incident_raw[is.na(N),N:=0]
     incident_std <- incident_raw[,std_risk:=N/pop_raw*pop_std_ratio*100000
-                                         ][,.(std_risk=sum(std_risk),pop_raw=sum(pop_raw)),year_onset
-                                           ][,stdN:=round(std_risk*pop_raw/100000)]
+    ][,.(std_risk=sum(std_risk),pop_raw=sum(pop_raw)),year_onset
+    ][,stdN:=round(std_risk*pop_raw/100000)]
 
 
 
@@ -180,75 +126,8 @@ run_incidence <- function(demo, dx, rx, region="hk",codes_sys = "icd9"){
                        est_l=as.numeric(est_l),
                        est_h=as.numeric(est_h),
                        year_onset=factor(year_onset))]
-    return(list(std_inci=incident_std, raw_dt=dx_inci))
-}
-
-#' Plot the figure of incidence
-#'
-#' @param data the dataset generated from run_incidence
-#' @param region the site name which will be shown in the plot
-#'
-#' @return
-#' @export
-#'
-#' @examples p_inci(data$std_inci)
-p_inci <- function(data,region="Hong Kong"){
-    ggplot(data$std_inci,aes(x=year_onset,y=est,group=1))+
-        geom_line()+theme_light()+
-        xlab("Onset year")+
-        ylab("Age standardized MND incidence \nby year per 100,000 population")+
-        ggtitle(region)+
-        theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1,size=18),
-              axis.text.y = element_text(size=18),
-              plot.title = element_text(size=22),
-              axis.title = element_text(size=18)
-              )
-}
-
-
-#' Plot the figure of incidence by age
-#'
-#' @param data the dataset generated from run_incidence
-#'
-#' @return
-#' @export
-#'
-#' @examples p_inci_sex(data)
-p_inci_sex <- function(data,region="Hong Kong"){
-    iw <- incidence(data$raw_dt, interval = "6 months", date_index = onset_date, groups = sex)
-    plot(iw, fill = "sex", color = "white",border="grey",title = region,ylab="Number of cases")+
-        theme(axis.text.x = element_text(vjust = 0, hjust=0.5,size=18),
-              axis.text.y = element_text(size=18),
-              plot.title = element_text(size=22),
-              axis.title = element_text(size=18)
-        )
-}
-
-
-
-#' Plot the figure of incidence by subgroup
-#'
-#' @param data the dateset generated from run_incidence
-#' @param region the site name which will be shown in the plot
-#'
-#' @return
-#' @export
-#'
-#' @examples p_inci_type(data)
-p_inci_type<-function(data,region="Hong Kong"){
-    dt_subtypes <- melt(data$raw_dt[,.(id,onset_date,
-                                       subtype.als,subtype.pma,subtype.pbp,subtype.pls,subtype.others)],
-                        id.vars = c("id","onset_date"))[value==TRUE]
-    icd_subtypes <- as.data.table(readxl::read_excel("data/codes_mnd.xlsx",sheet = "subtype"))
-    icd_subtypes$abbr <- paste0("subtype.",icd_subtypes$abbr)
-    dt_subtypes <- merge(dt_subtypes,icd_subtypes[,.(Dx,variable=abbr)],by="variable")
-    iw_gp <- incidence(dt_subtypes,interval="6 months", date_index = onset_date, groups=Dx)
-    facet_plot(iw_gp, n_breaks = 3, color = "white",date_format = "%Y-%m",
-               title=region,nrow = 2,ylab="Number of cases")+
-        theme(axis.text.x = element_text(vjust = 0, hjust=0.5,size=18),
-              axis.text.y = element_text(size=18),
-              plot.title = element_text(size=22),
-              axis.title = element_text(size=18),
-              strip.text.x = element_text(size = 15))
+    output <- list(std_inci=incident_std, raw_dt=dx_inci)
+    output <- structure(output,class=c("mndinci","list"))
+    return(output)
 }
 
