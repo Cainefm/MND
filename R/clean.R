@@ -185,7 +185,7 @@ clean_4_survival <- function(demo,dx,rx,codes_sys,riluzole_name='riluzole|rilute
         stop("Don't worry. Fm is working on Readcode now.")
     }
 
-    icd_subtypes <- as.data.table(readxl::read_excel("dir_mnd_codes",sheet = "subtype"))
+    icd_subtypes <- as.data.table(readxl::read_excel(dir_mnd_codes,sheet = "subtype"))
     icd_subtypes_temp <- icd_subtypes[,.(Dx, abbr, grepl=get(codes_sys))]
     temp_dx <- copy(dx)
     setorder(temp_dx,"id","ref_date")
@@ -221,7 +221,7 @@ clean_4_survival <- function(demo,dx,rx,codes_sys,riluzole_name='riluzole|rilute
     df_surv <- df_surv[time_to_event>=0 & onset_date>=ymd("1994-01-01")]
 
     # get past hx
-    codes_icd <- setDT(read_xlsx("./dir_mnd_codes",sheet = "hx"))
+    codes_icd <- setDT(read_xlsx(dir_mnd_codes,sheet = "hx"))
     codes_icd <- codes_icd[!is.na(grepl) & !is.na(Description)]
     message("================================\nobtain past hx for the cohort")
     apply(codes_icd,1,function(x) get_px_dx(df_surv,dx,x))
