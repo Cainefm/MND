@@ -93,13 +93,14 @@ sccs <- function(fml,dob13,...){
 #'
 #' @examples run_incidence(demo, dx)
 run_incidence <- function(demo, dx, rx, region="hk",codes_sys = "icd9"){
+    if(!exists("dir_mnd_codes")){stop("Pls input the directory of mnd\n eg. dir_mnd_codes<-\"./data/codes_mnd.xlsx\"")}
     dx_inci <- clean_4_survival(demo=demo,dx=dx,rx = rx, codes_sys)
 
-    raw_pop <- setDT(read_xlsx("./data/codes_mnd.xlsx", sheet=paste0(region,"_pop")))
+    raw_pop <- setDT(read_xlsx(dir_mnd_codes, sheet=paste0(region,"_pop")))
     raw_pop <- melt(raw_pop,id.vars = "Age")
     setnames(raw_pop,c("variable","value"),c("year_onset","pop_raw"))
 
-    std_pop <- setDT(read_xlsx("./data/codes_mnd.xlsx",sheet="stdpop"))
+    std_pop <- setDT(read_xlsx(dir_mnd_codes,sheet="stdpop"))
     std_pop$Age<-factor(std_pop$Age)
 
 
