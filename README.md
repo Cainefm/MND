@@ -23,7 +23,7 @@
 
 2. Install [RTools](https://cran.r-project.org/bin/windows/Rtools/rtools40.html)
 
-3. Copy the mnd_codes.xlsx file into the local drive and input your regional values, eg. population.
+3. Copy the [mnd_codes.xlsx](https://github.com/Cainefm/MND/blob/master/data/codes_mnd.xlsx) file into the local drive and input your regional values, eg. population.
 
     ![image](https://user-images.githubusercontent.com/20833144/147719924-4d872bcb-e6fa-400b-b0af-a255d0945035.png)
 
