@@ -31,7 +31,7 @@
     ```r
     install.packages("devtools") # may need to input 1 or 2 if there are any packages needed to update. 
     library("devtools")
-    install_github("Cainefm/MND")
+    devtools::install_github("Cainefm/MND",upgrade="never")
     library("MND")
     dir_mnd_codes <- "" #pls input your directory of MND_codes.xlsx here. 
     ```
