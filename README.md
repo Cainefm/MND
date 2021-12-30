@@ -23,14 +23,19 @@
 
 2. Install [RTools](https://cran.r-project.org/bin/windows/Rtools/rtools40.html)
 
-3. Create an empty folder or new RStudio project. Then in R, use the following code to install the study package and its dependencies:
+3. Copy the mnd_codes.xlsx file into the local drive and input your regional values, eg. population.
 
+    ![image](https://user-images.githubusercontent.com/20833144/147719924-4d872bcb-e6fa-400b-b0af-a255d0945035.png)
+
+4. Create an empty folder or new RStudio project. Then in R, use the following code to install the study package and its dependencies:
     ```r
+    install.packages("devtools") # may need to input 1 or 2 if there are any packages needed to update. 
     library("devtools")
     install_github("Cainefm/MND")
+    dir_mnd_codes <- "" #pls input your directory of MND_codes.xlsx here. 
     ```
 
-4. The common data shell are presented in the protocol
+5. The common data shell are presented in the protocol
 
     ****
       Demographic table
@@ -57,7 +62,8 @@
     <p align="center">
        <img width="400" src="https://user-images.githubusercontent.com/20833144/147063331-ce859a07-d71e-4c7e-9be4-4797d81764fa.png">
     </p>
-5. For incidence estimation.
+    
+6. For incidence estimation.
 
     ```r
     site_inci <- run_incidence(demo, dx, rx)
@@ -94,7 +100,7 @@
    <img width="800" src="https://user-images.githubusercontent.com/20833144/147545748-22dea721-5b01-4e06-88ff-d2888f6650d3.png">
 </p>
 
-5. For sccs estimation:
+7. For sccs estimation:
     ```r
     run_sccs(demo,rx,ip)
     ```
