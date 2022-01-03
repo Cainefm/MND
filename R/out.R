@@ -142,9 +142,8 @@ get_inci_CI <- function(x){
 #' @return
 #' @export
 get_tv_cox <- function(x){
-    cox_result <- x$cox_tv
-    est <- exp(cox_result$coefficients)
-    est_95 <- exp(confint.default(cox_result))
+    est <- exp(x$coefficients)
+    est_95 <- exp(confint.default(x))
     est_com <- data.table(var=names(est),
                           est=show_digit(est),
                           est_l=show_digit(est_95[,1]),

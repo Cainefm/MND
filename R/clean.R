@@ -223,7 +223,7 @@ cleaning_mnd <- function(demo,dx,rx,codes_sys,riluzole_name='riluzole|riluteck',
     # get past hx
     codes_icd <- setDT(read_xlsx(dir_mnd_codes,sheet = "hx"))
     codes_icd <- codes_icd[!is.na(grepl) & !is.na(Description)]
-    message("================================\nobtain past hx for the cohort")
+    message("================================\nobtain past hx for the cohort\n")
     apply(codes_icd,1,function(x) get_px_dx(df_surv,dx,x))
     # add cci
     df_surv[, score.cci := (hx.mi+hx.chf+hx.pvd+hx.cbd+hx.copd+hx.dementia+hx.paralysis+(hx.dm_com0&!hx.dm_com1)+hx.dm_com1*2+hx.crf*2+(hx.liver_mild&!hx.liver_modsev)+hx.liver_modsev*3+hx.ulcers+hx.ra+hx.aids*6+hx.cancer*2+hx.cancer_mets*6)]

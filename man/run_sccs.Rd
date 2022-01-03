@@ -6,6 +6,7 @@
 \usage{
 run_sccs(
   demo,
+  dx,
   rx,
   ip,
   riluzole_name = "riluzole|riluteck",

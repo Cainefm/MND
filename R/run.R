@@ -11,7 +11,7 @@
 #' @export
 #'
 #' @examples run_sccs()
-run_sccs <- function(demo, rx, ip,
+run_sccs <- function(demo, dx, rx, ip,
                      riluzole_name='riluzole|riluteck',
                      obst="2001-08-24",
                      obed="2018-12-31",...){
@@ -91,8 +91,8 @@ sccs <- function(fml,dob13,...){
 #' @return
 #' @export
 #'
-#' @examples run_incidence(demo, dx)
-run_incidence <- function(demo, dx, rx, region="hk",codes_sys = "icd9"){
+#' @examples run_desc(demo, dx, rx)
+run_desc <- function(demo, dx, rx, ip, region="hk",codes_sys = "icd9"){
     if(!exists("dir_mnd_codes")){stop("Pls input the directory of mnd\n eg. dir_mnd_codes<-\"./data/codes_mnd.xlsx\"")}
     dt_after_clean <- cleaning_mnd(demo=demo,dx=dx,rx = rx, codes_sys)
     dt_inci <- dt_after_clean$dt_raw
@@ -132,7 +132,11 @@ run_incidence <- function(demo, dx, rx, region="hk",codes_sys = "icd9"){
                                     drug_sta+cluster(id)+sex+hx.htn+
                                     hx.depre+hx.pd+score.cci,dt_tv,id = id)
 
-    output <- list(std_inci=incident_std, dt_raw=dt_after_clean$dt_raw, dt_cox=dt_tv, cox_tv=fit_cox_timevaring)
+    output <- list(dt_raw=dt_after_clean$dt_raw,
+                   dt_cox=dt_tv,
+                   std_inci=incident_std,
+                   cox_result=fit_cox_timevaring,
+                   cox_est=get_tv_cox(fit_cox_timevaring))
     output <- structure(output,class=c("mndinci","list"))
     return(output)
 }
