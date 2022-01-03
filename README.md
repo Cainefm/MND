@@ -73,7 +73,7 @@
     # the standardized incidence
     dt_desc$std_inci
     # the raw data for incidence
-    dt_desc$raw_dt
+    dt_desc$dt_raw
     ```  
     <p align="center">
         <img width="400" src="https://user-images.githubusercontent.com/20833144/147910480-231b626b-05e4-4098-aa68-0c6ab1884663.png">
