@@ -69,7 +69,7 @@
     ### Standardized incidence  
 
     ```r
-    dt_desc <- run_desc(demo, dx, rx, ip)
+    dt_desc <- run_desc(demo, dx, rx, ip, region = "hk", codes_sys = "icd9")
     # the standardized incidence
     dt_desc$std_inci
     # the raw data for incidence
@@ -115,7 +115,10 @@
 
 7. For sccs estimation:
     ```r
-    run_sccs(demo, dx, rx, ip)
+    run_sccs(demo, dx, rx, ip，
+              riluzole_name = "riluzole|riluteck",
+              obst = "2001-08-24",
+              obed = "2018-12-31")
     ```
     <p align="center">
        <img width="300" src="https://user-images.githubusercontent.com/20833144/147911318-fcd2ec92-e391-400d-9bbf-df843d3ecf74.png">
