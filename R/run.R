@@ -94,6 +94,7 @@ sccs <- function(fml,dob13,...){
 #' @examples run_desc(demo, dx, rx)
 run_desc <- function(demo, dx, rx, ip, region="hk",codes_sys = "icd9"){
     if(!exists("dir_mnd_codes")){stop("Pls input the directory of mnd\n eg. dir_mnd_codes<-\"./data/codes_mnd.xlsx\"")}
+    if(!packageVersion("SCCS")=="1.3"){stop("SCCS version has to be 1.3")}
     dt_after_clean <- cleaning_mnd(demo=demo,dx=dx,rx = rx, codes_sys)
     dt_inci <- dt_after_clean$dt_raw
 

@@ -2,8 +2,8 @@ Package: MND
 Type: Package
 Title: A package for epidemiology study about Motor neuron disease (MND) in the NEUROGEN
 Version: 0.9.0
-Depends: data.table, SCCS(== 1.3), lubridate, readxl, ggplot2, incidence2, survival
-Imports: data.table, SCCS(== 1.3), lubridate, readxl, ggplot2, incidence2, survival
+Depends: data.table, SCCS, lubridate, readxl, ggplot2, incidence2, survival
+Imports: data.table, SCCS, lubridate, readxl, ggplot2, incidence2, survival
 Suggests: 
 Author: c(person("FAN", "Min", email = "minfan@connect.hku.hk", role =c("aut", "cre")))
 Maintainer: FAN Min <minfan@connect.hku.hk>
