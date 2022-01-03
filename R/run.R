@@ -135,6 +135,7 @@ run_desc <- function(demo, dx, rx, ip, region="hk",codes_sys = "icd9"){
 
     output <- list(dt_raw=dt_after_clean$dt_raw,
                    dt_cox=dt_tv,
+                   tableone=get_tableone(dt_after_clean$dt_raw),
                    std_inci=incident_std,
                    cox_result=fit_cox_timevaring,
                    cox_est=get_tv_cox(fit_cox_timevaring))

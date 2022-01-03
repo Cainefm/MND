@@ -295,3 +295,35 @@ get_px_dx <- function(data,dx,icd9){
 }
 
 
+
+
+#' Generate table one for the cohort
+#'
+#' @param x dataset including data after cleaning
+#'
+#' @return
+#' @export
+#'
+#' @examples get_tableone(x)
+get_tableone <- function(x){
+    df_surv_table1 <- copy(x)
+    codes_icd <- as.data.table(read_excel(dir_mnd_codes,sheet ="hx"))[!is.na(Description)&!is.na(Dx)]
+    setnames(df_surv_table1,
+             codes_icd[,paste0("hx.",Dx)],
+             codes_icd[,Description])
+    subtype_icd <- as.data.table(read_excel(dir_mnd_codes,sheet ="subtype"))[!is.na(Dx)&!is.na(abbr)]
+    setnames(df_surv_table1,
+             subtype_icd[,paste0("subtype.",abbr),],
+             subtype_icd[,Dx]
+             )
+
+    vars <- c("Amyotrophic lateral sclerosis", "Progressive muscular atrophy",
+              "Progressive bulbar palsy", "Primary lateral sclerosis", "Others or unclassified",
+              "sex", "age_adm", "age_group", "age_group_std", "score.cci", "riluzole",
+              codes_icd[,Description])
+
+    catvars <- setdiff(vars,c("age_adm", "score.cci"))
+
+    table1 <- CreateTableOne(data = as.data.frame(df_surv_table1),vars = vars,factorVars = catvars,strata = "riluzole")
+    return(table1)
+}
