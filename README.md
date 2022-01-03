@@ -112,8 +112,15 @@
        <img width="300" src="https://user-images.githubusercontent.com/20833144/147910788-06b8431e-e852-43c8-8748-8c7f4ee8f9c6.png">
     </p>
 
+7. Generate table one descriptive statistics
+    ```r
+    dt_desc$tableone
+    ```
+    <p align="center">
+       <img width="800" src="https://user-images.githubusercontent.com/20833144/147919038-75ee9cb2-e986-4d2e-9f0c-35a67b5d46a9.png">
+    </p>   
 
-7. For sccs estimation:
+8. For sccs estimation:
     ```r
     run_sccs(demo, dx, rx, ip，
               riluzole_name = "riluzole|riluteck",
