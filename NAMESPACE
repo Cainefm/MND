@@ -2,10 +2,11 @@
 
 S3method(print,mndinci)
 S3method(print,mndsccs)
-export(clean_4_survival)
+export(cleaning_mnd)
 export(get_DT_Exposure_Endpoint)
 export(get_DT_SCCS)
 export(get_px_dx)
+export(get_tv_cox)
 export(p_inci)
 export(p_inci_sex)
 export(p_inci_type)

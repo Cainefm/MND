@@ -133,3 +133,21 @@ get_inci_CI <- function(x){
                      show_digit(est_h),")")
     return(data.frame(est,est_l,est_h,est_cb))
 }
+
+
+#' Cox Ci calculation
+#'
+#' @param x
+#'
+#' @return
+#' @export
+get_tv_cox <- function(x){
+    cox_result <- x$cox_tv
+    est <- exp(cox_result$coefficients)
+    est_95 <- exp(confint.default(cox_result))
+    est_com <- data.table(var=names(est),
+                          est=show_digit(est),
+                          est_l=show_digit(est_95[,1]),
+                          est_h=show_digit(est_95[,2]))
+    return(est_com)
+}

@@ -171,11 +171,11 @@ get_subtype <- function(data,icd_subtypes_temp){
 #' @param codes_sys can be "icd9", "icd10", or "readcodes"
 #' @param riluzole_name the name in your database stands for riluzole.
 #'
-#' @return
+#' @return two dataset:1) for incidence 2) for time varing cox
 #' @export
 #'
-#' @examples clean_4_survival(demo, dx, codes_sys="icd9")
-clean_4_survival <- function(demo,dx,rx,codes_sys,riluzole_name='riluzole|riluteck',...){
+#' @examples cleaning_mnd(demo, dx, codes_sys="icd9")
+cleaning_mnd <- function(demo,dx,rx,codes_sys,riluzole_name='riluzole|riluteck',...){
 
     if(codes_sys=="icd9"){
         codes_defined <- "^335.2$|^335.2[01249]"

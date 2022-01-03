@@ -94,7 +94,7 @@ sccs <- function(fml,dob13,...){
 #' @examples run_incidence(demo, dx)
 run_incidence <- function(demo, dx, rx, region="hk",codes_sys = "icd9"){
     if(!exists("dir_mnd_codes")){stop("Pls input the directory of mnd\n eg. dir_mnd_codes<-\"./data/codes_mnd.xlsx\"")}
-    dt_after_clean <- clean_4_survival(demo=demo,dx=dx,rx = rx, codes_sys)
+    dt_after_clean <- cleaning_mnd(demo=demo,dx=dx,rx = rx, codes_sys)
     dt_inci <- dt_after_clean$dt_raw
 
     raw_pop <- setDT(read_xlsx(dir_mnd_codes, sheet=paste0(region,"_pop")))
