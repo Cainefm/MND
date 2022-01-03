@@ -55,7 +55,7 @@ p_inci_type<-function(data,region="Hong Kong"){
     dt_subtypes <- melt(data$dt_raw[,.(id,onset_date,
                                        subtype.als,subtype.pma,subtype.pbp,subtype.pls,subtype.others)],
                         id.vars = c("id","onset_date"))[value==TRUE]
-    icd_subtypes <- as.data.table(readxl::read_excel("data/codes_mnd.xlsx",sheet = "subtype"))
+    icd_subtypes <- as.data.table(readxl::read_excel(dir_mnd_codes,sheet = "subtype"))
     icd_subtypes$abbr <- paste0("subtype.",icd_subtypes$abbr)
     dt_subtypes <- merge(dt_subtypes,icd_subtypes[,.(Dx,variable=abbr)],by="variable")
     iw_gp <- incidence(dt_subtypes,interval="6 months", date_index = onset_date, groups=Dx)
