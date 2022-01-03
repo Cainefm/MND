@@ -31,7 +31,7 @@ p_inci <- function(data,region="Hong Kong"){
 #'
 #' @examples p_inci_sex(data)
 p_inci_sex <- function(data,region="Hong Kong"){
-    iw <- incidence(data$raw_dt, interval = "6 months", date_index = onset_date, groups = sex)
+    iw <- incidence(data$dt_raw, interval = "6 months", date_index = onset_date, groups = sex)
     plot(iw, fill = "sex", color = "white",border="grey",title = region,ylab="Number of cases")+
         theme(axis.text.x = element_text(vjust = 0, hjust=0.5,size=18),
               axis.text.y = element_text(size=18),
@@ -52,7 +52,7 @@ p_inci_sex <- function(data,region="Hong Kong"){
 #'
 #' @examples p_inci_type(data)
 p_inci_type<-function(data,region="Hong Kong"){
-    dt_subtypes <- melt(data$raw_dt[,.(id,onset_date,
+    dt_subtypes <- melt(data$dt_raw[,.(id,onset_date,
                                        subtype.als,subtype.pma,subtype.pbp,subtype.pls,subtype.others)],
                         id.vars = c("id","onset_date"))[value==TRUE]
     icd_subtypes <- as.data.table(readxl::read_excel("data/codes_mnd.xlsx",sheet = "subtype"))
