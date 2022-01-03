@@ -241,10 +241,38 @@ clean_4_survival <- function(demo,dx,rx,codes_sys,riluzole_name='riluzole|rilute
                              df_surv[,.(id,onset_date,obs.deadline)],"id")[
                                  date_rx_st>=onset_date & date_rx_st<obs.deadline]
 
+
+    ppl_hv_riluzole[,`:=`(strx=as.numeric(date_rx_st-onset_date),
+                          edrx=as.numeric(date_rx_end-onset_date),
+                          astart=0,
+                          aend=as.numeric(obs.deadline-onset_date),
+                          id=as.numeric(id))]
     df_surv[,riluzole:=fifelse(id %in% ppl_hv_riluzole$id,T,F)]
 
-    return(df_surv)
+    # time varing
+    df_surv$start <- 0
+    df_surv$end <- df_surv$time_to_event
+
+
+    df_surv <- df_surv[!end==0]
+    df_surv_tv <- tmerge(df_surv,df_surv,id=id,endpt=event(end,outcome))
+
+    df_status <- setDT(formatdata(indiv = id,
+                                  astart=astart,
+                                  aend=aend,
+                                  adrug=list(strx),
+                                  aedrug=list(edrx),
+                                  aevent=astart,
+                                  data=as.data.frame(ppl_hv_riluzole),dataformat = "stack"))[,.(id=indiv,drug=strx,lower,upper)]
+    df_surv_tv <- tmerge(df_surv_tv,df_status,id=id,drug_sta=tdc(lower,drug))
+    df_surv_tv$drug_sta[is.na(df_surv_tv$drug_sta)] <- 0
+
+
+    output <- list(dt_raw=df_surv,dt_tv=df_surv_tv)
+
+    return(output)
 }
+
 
 
 #' Obtain the past hx
@@ -265,6 +293,5 @@ get_px_dx <- function(data,dx,icd9){
     data[,c(paste0("hx.",icd9["Dx"])):=fifelse(id %in% temp,T,F)]
     message(icd9["Description"],"----",length(temp))
 }
-
 
 

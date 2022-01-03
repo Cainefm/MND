@@ -94,7 +94,8 @@ sccs <- function(fml,dob13,...){
 #' @examples run_incidence(demo, dx)
 run_incidence <- function(demo, dx, rx, region="hk",codes_sys = "icd9"){
     if(!exists("dir_mnd_codes")){stop("Pls input the directory of mnd\n eg. dir_mnd_codes<-\"./data/codes_mnd.xlsx\"")}
-    dx_inci <- clean_4_survival(demo=demo,dx=dx,rx = rx, codes_sys)
+    dt_after_clean <- clean_4_survival(demo=demo,dx=dx,rx = rx, codes_sys)
+    dt_inci <- dt_after_clean$dt_raw
 
     raw_pop <- setDT(read_xlsx(dir_mnd_codes, sheet=paste0(region,"_pop")))
     raw_pop <- melt(raw_pop,id.vars = "Age")
@@ -104,7 +105,7 @@ run_incidence <- function(demo, dx, rx, region="hk",codes_sys = "icd9"){
     std_pop$Age<-factor(std_pop$Age)
 
 
-    incident_raw <- dx_inci[,.(id,year_onset,age_group_std)][,.N,by=.(age_group_std,year_onset)]
+    incident_raw <- dt_inci[,.(id,year_onset,age_group_std)][,.N,by=.(age_group_std,year_onset)]
     setnames(incident_raw,"age_group_std","Age")
     incident_raw$year_onset <- as.factor(incident_raw$year_onset)
     setorder(incident_raw,Age,year_onset)
@@ -120,14 +121,18 @@ run_incidence <- function(demo, dx, rx, region="hk",codes_sys = "icd9"){
     ][,.(std_risk=sum(std_risk),pop_raw=sum(pop_raw)),year_onset
     ][,stdN:=round(std_risk*pop_raw/100000)]
 
-
-
     incident_std <- cbind(incident_std,rbindlist(apply(incident_std,1,get_inci_CI)))
     incident_std[,`:=`(est=as.numeric(est),
                        est_l=as.numeric(est_l),
                        est_h=as.numeric(est_h),
                        year_onset=factor(year_onset))]
-    output <- list(std_inci=incident_std, raw_dt=dx_inci)
+
+    dt_tv <- dt_after_clean$dt_tv
+    fit_cox_timevaring <- coxph(Surv(tstart,tstop,endpt)~
+                                    drug_sta+cluster(id)+sex+hx.htn+
+                                    hx.depre+hx.pd+score.cci,dt_tv,id = id)
+
+    output <- list(std_inci=incident_std, dt_raw=dt_after_clean$dt_raw, dt_cox=dt_tv, cox_tv=fit_cox_timevaring)
     output <- structure(output,class=c("mndinci","list"))
     return(output)
 }
