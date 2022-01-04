@@ -57,8 +57,8 @@
     </p>
 
     ```r
-    ## Some data for testing are attached in the package
-    data(demo)
+    ## A sub population in HK for testing are attached in the package
+    demo
     ```
     <p align="center">
        <img width="400" src="https://user-images.githubusercontent.com/20833144/147063331-ce859a07-d71e-4c7e-9be4-4797d81764fa.png">
