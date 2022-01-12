@@ -142,4 +142,3 @@ run_desc <- function(demo, dx, rx, ip, region="hk",codes_sys = "icd9"){
     output <- structure(output,class=c("mndinci","list"))
     return(output)
 }
-

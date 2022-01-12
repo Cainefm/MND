@@ -203,12 +203,12 @@ cleaning_mnd <- function(demo,dx,rx,codes_sys,riluzole_name='riluzole|riluteck',
     temp_dx <- merge(temp_dx_codes,temp_dx,by=c("id","onset_date"))
 
 
-    df_surv <- merge(temp_dx,
-                     demo[,.(id,sex,dob,dod)],
-                     by="id",all.x=T)
+    df_surv <- merge(demo[,.(id,sex,dob,dod)],
+                     temp_dx,
+                     by="id",all.y=T)
 
-    df_surv[,outcome:=fifelse(!is.na(dod),1,0)]
-    df_surv[,obs.deadline:=fifelse(is.na(dod),ymd('20191231'),dod)]
+    df_surv[,outcome:=fifelse(!is.na(dod) & dod <= ymd("20181231"),1,0)]
+    df_surv[,obs.deadline:=fifelse(is.na(dod) | dod > ymd("20181231"),ymd('20181231'),dod)]
     df_surv[,age_adm:=as.numeric((onset_date-dob)/365.25)]
     df_surv[,age_group:=cut(age_adm, breaks = c(0,6,13,20,48,65,80,Inf),
                             include.lowest = T,right=FALSE)]
@@ -235,8 +235,7 @@ cleaning_mnd <- function(demo,dx,rx,codes_sys,riluzole_name='riluzole|riluteck',
 
     message("\n================================\nobtain riluzole indicator")
     # add prescription indicator
-    rx_riluzole<- shrink_interval(rx[grepl(riluzole_name,drug_name,ignore.case = T) &
-                                         !setting %in% c("I")],"date_rx_st","date_rx_end")
+    rx_riluzole<- shrink_interval(rx[grepl(riluzole_name,drug_name,ignore.case = T)],"date_rx_st","date_rx_end")
     ppl_hv_riluzole <- merge(rx_riluzole,
                              df_surv[,.(id,onset_date,obs.deadline)],"id")[
                                  date_rx_st>=onset_date & date_rx_st<obs.deadline]
@@ -250,23 +249,22 @@ cleaning_mnd <- function(demo,dx,rx,codes_sys,riluzole_name='riluzole|riluteck',
     df_surv[,riluzole:=fifelse(id %in% ppl_hv_riluzole$id,T,F)]
 
     # time varing
-    df_surv$start <- 0
-    df_surv$end <- df_surv$time_to_event
+    df_surv$tstart <- 0
+    df_surv$tstop <- df_surv$time_to_event
 
 
-    df_surv <- df_surv[!end==0]
-    df_surv_tv <- tmerge(df_surv,df_surv,id=id,endpt=event(end,outcome))
+    df_surv_tv <- df_surv[!tstop==0]
+    df_surv_tv <- tmerge(df_surv_tv,df_surv_tv,id=id,endpt=event(tstop,outcome))
 
-    df_status <- setDT(formatdata(indiv = id,
+    rx_status <- setDT(formatdata(indiv = id,
                                   astart=astart,
                                   aend=aend,
                                   adrug=list(strx),
                                   aedrug=list(edrx),
                                   aevent=astart,
                                   data=as.data.frame(ppl_hv_riluzole),dataformat = "stack"))[,.(id=indiv,drug=strx,lower,upper)]
-    df_surv_tv <- tmerge(df_surv_tv,df_status,id=id,drug_sta=tdc(lower,drug))
+    df_surv_tv <- tmerge(df_surv_tv,rx_status,id=id,drug_sta=tdc(lower,drug))
     df_surv_tv$drug_sta[is.na(df_surv_tv$drug_sta)] <- 0
-
 
     output <- list(dt_raw=df_surv,dt_tv=df_surv_tv)
 
