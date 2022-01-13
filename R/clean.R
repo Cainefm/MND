@@ -208,7 +208,7 @@ cleaning_mnd <- function(demo,dx,rx,codes_sys,riluzole_name='riluzole|riluteck',
                      by="id",all.y=T)
 
     df_surv[,outcome:=fifelse(!is.na(dod) & dod <= ymd("20181231"),1,0)]
-    df_surv[,obs.deadline:=fifelse(is.na(dod) | dod > ymd("20181231"),ymd('20181231'),dod)]
+    df_surv[,obs.deadline:=fifelse(is.na(dod) | dod > ymd("20181231"),ymd("20181231"),dod)]
     df_surv[,age_adm:=as.numeric((onset_date-dob)/365.25)]
     df_surv[,age_group:=cut(age_adm, breaks = c(0,6,13,20,48,65,80,Inf),
                             include.lowest = T,right=FALSE)]
@@ -249,12 +249,12 @@ cleaning_mnd <- function(demo,dx,rx,codes_sys,riluzole_name='riluzole|riluteck',
     df_surv[,riluzole:=fifelse(id %in% ppl_hv_riluzole$id,T,F)]
 
     # time varing
-    df_surv$tstart <- 0
-    df_surv$tstop <- df_surv$time_to_event
+    df_surv$start <- 0
+    df_surv$stop <- df_surv$time_to_event
 
 
-    df_surv_tv <- df_surv[!tstop==0]
-    df_surv_tv <- tmerge(df_surv_tv,df_surv_tv,id=id,endpt=event(tstop,outcome))
+    df_surv_tv <- df_surv[!stop==0]
+    df_surv_tv <- tmerge(df_surv_tv,df_surv_tv,id=id,endpt=event(stop,outcome))
 
     rx_status <- setDT(formatdata(indiv = id,
                                   astart=astart,

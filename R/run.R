@@ -107,6 +107,12 @@ run_desc <- function(demo, dx, rx, ip, region="hk",codes_sys = "icd9"){
 
 
     incident_raw <- dt_inci[,.(id,year_onset,age_group_std)][,.N,by=.(age_group_std,year_onset)]
+    death_number <- dt_inci[,.(id,year_death=year(dod),age_group_std)][,.N,by=.(age_group_std,year_death)][!is.na(year_death)]
+    prevalence.N <- merge(incident_raw,death_number,by.x=c("year_onset","age_group_std"),by.y=c("year_death","age_group_std"),suffixes = c(".inci",".death"))[,sum(N.inci)-sum(N.death)]
+    message("Till the end of study, ",prevalence.N," ppl were found with MND.")
+    poi_prev <- poisson.test(prevalence.N,sum(as.data.table(read_xlsx(dir_mnd_codes,sheet = "hk_pop"))[,`2018`]))
+    message("prevalence:",paste(round(c(as.numeric(poi_prev$estimate*100000),
+                          as.numeric(poi_prev$conf.int*100000)),2),collapse =" "))
     setnames(incident_raw,"age_group_std","Age")
     incident_raw$year_onset <- as.factor(incident_raw$year_onset)
     setorder(incident_raw,Age,year_onset)
@@ -118,6 +124,10 @@ run_desc <- function(demo, dx, rx, ip, region="hk",codes_sys = "icd9"){
                           std_pop[,.(Age,pop_std=`Standard For SEER*Stat`,pop_std_ratio=`WHO std pop`)],
                           by=c("Age"))
     incident_raw[is.na(N),N:=0]
+
+    # death
+    # cumsum(table(year(des$dt_raw$dod)))
+
     incident_std <- incident_raw[,std_risk:=N/pop_raw*pop_std_ratio*100000
     ][,.(std_risk=sum(std_risk),pop_raw=sum(pop_raw)),year_onset
     ][,stdN:=round(std_risk*pop_raw/100000)]
