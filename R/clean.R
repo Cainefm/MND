@@ -253,7 +253,7 @@ cleaning_mnd <- function(demo,dx,rx,codes_sys,riluzole_name='riluzole|riluteck',
     df_surv$stop <- df_surv$time_to_event
 
 
-    df_surv_tv <- df_surv[!stop==0]
+    df_surv_tv <- df_surv[stop==0,stop:=1]
     df_surv_tv <- tmerge(df_surv_tv,df_surv_tv,id=id,endpt=event(stop,outcome))
 
     rx_status <- setDT(formatdata(indiv = id,
@@ -265,6 +265,10 @@ cleaning_mnd <- function(demo,dx,rx,codes_sys,riluzole_name='riluzole|riluteck',
                                   data=as.data.frame(ppl_hv_riluzole),dataformat = "stack"))[,.(id=indiv,drug=strx,lower,upper)]
     df_surv_tv <- tmerge(df_surv_tv,rx_status,id=id,drug_sta=tdc(lower,drug))
     df_surv_tv$drug_sta[is.na(df_surv_tv$drug_sta)] <- 0
+
+    # add frequency of admission after onset
+    #N.adm <- merge(df_surv[,.(id,onset_date,dod)],MND:::shrink_interval(ip,"date_adm","date_dsg",gap=7))[date_dsg>=onset_date][,.(N.adm=.N),id]
+    #df_surv <- merge(df_surv,N.adm,by="id",all.x = T)[is.na(N.adm),N.adm:=0]
 
     output <- list(dt_raw=df_surv,dt_tv=df_surv_tv)
 
