@@ -77,15 +77,42 @@
     dt_desc$dt_raw
     ```  
     <p align="center">
-        <img width="400" src="https://user-images.githubusercontent.com/20833144/147910480-231b626b-05e4-4098-aa68-0c6ab1884663.png">
+       <table class="tg">
+          <thead>
+            <tr>
+              <th>   <br>HK results: </th>
+              <th>   <br>Testing dataset:   </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="tg-0pky"> <img width="400" src="https://user-images.githubusercontent.com/20833144/147910480-231b626b-05e4-4098-aa68-0c6ab1884663.png">
+              <td class="tg-0pky"> <img width="400" src="https://user-images.githubusercontent.com/20833144/149449533-05379b88-c4f9-45cc-88be-a4ff6dfbc00d.png">
+            </tr>
+          </tbody>
+      </table>
     </p>
 
 
+
     ```r
-    p_inci(dt_desc)
+    p_inci(dt_desc,region="test")
     ```
     <p align="center">
-       <img width="600" src="https://user-images.githubusercontent.com/20833144/147521882-81b3577f-fff9-4df4-b2b3-fedacc59e181.png">
+       <table class="tg">
+          <thead>
+            <tr>
+              <th>   <br>HK results: </th>
+              <td>   <img width="600" src="https://user-images.githubusercontent.com/20833144/147521882-81b3577f-fff9-4df4-b2b3-fedacc59e181.png">
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th> <br>Testing dataset:   </th>
+              <td> <img width="600" src="https://user-images.githubusercontent.com/20833144/149449826-fec2f61a-8b58-4056-aab8-183f94d0e1d1.png">
+            </tr>
+          </tbody>
+      </table>
     </p>
 
 
@@ -93,15 +120,40 @@
     p_inci_sex(dt_desc)
     ```
     <p align="center">
-       <img width="700" src="https://user-images.githubusercontent.com/20833144/147545663-d858cd7b-fb99-46c6-9b9c-d43cc97bdf5d.png">
+       <table class="tg">
+          <thead>
+            <tr>
+              <th >   <br>HK results: </th>
+              <td >   <img width="600" src="https://user-images.githubusercontent.com/20833144/147545663-d858cd7b-fb99-46c6-9b9c-d43cc97bdf5d.png">
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th> <br>Testing dataset:   </th>
+              <td> <img width="600" src="https://user-images.githubusercontent.com/20833144/149449931-969a2c7c-e22e-47c0-971c-a0cc9a605de6.png">
+            </tr>
+          </tbody>
+      </table>
     </p>
 
-
     ```r
-    p_inci_type(dt_desc)
+    p_inci_type(dt_desc,region="test")
     ```
     <p align="center">
-       <img width="800" src="https://user-images.githubusercontent.com/20833144/147545748-22dea721-5b01-4e06-88ff-d2888f6650d3.png">
+       <table class="tg">
+          <thead>
+            <tr>
+              <th >   <br>HK results: </th>
+              <td >   <img width="800" src="https://user-images.githubusercontent.com/20833144/147545748-22dea721-5b01-4e06-88ff-d2888f6650d3.png">
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th> <br>Testing dataset:   </th>
+              <td> <img width="600" src="https://user-images.githubusercontent.com/20833144/149450181-3ac479e1-7bdc-4515-9af5-712bb3b0242b.png">
+            </tr>
+          </tbody>
+      </table>
     </p>
 
     ### Time-varing Cox regression
@@ -109,10 +161,22 @@
     ```r
     dt_desc$cox_est
     ```
-    <p align="center">
-       <img width="300" src="https://user-images.githubusercontent.com/20833144/149447726-845ab9dd-a99c-4bfa-96af-441492e64c1c.png">
+     <p align="center">
+       <table class="tg">
+          <thead>
+            <tr>
+              <th >   <br>HK results: </th>
+              <td >   <img width="300" src="https://user-images.githubusercontent.com/20833144/149447726-845ab9dd-a99c-4bfa-96af-441492e64c1c.png">
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th> <br>Testing dataset:   </th>
+              <td> <img width="300" src="https://user-images.githubusercontent.com/20833144/149450445-e9072422-0a23-4bd7-a652-ea12d72aec13.png">
+            </tr>
+          </tbody>
+      </table>
     </p>
-    
 
 7. Generate table one descriptive statistics
     ```r
@@ -130,5 +194,18 @@
               obed = "2018-12-31")
     ```
     <p align="center">
-       <img width="300" src="https://user-images.githubusercontent.com/20833144/147911318-fcd2ec92-e391-400d-9bbf-df843d3ecf74.png">
+       <table class="tg">
+          <thead>
+            <tr>
+              <th >   <br>HK results: </th>
+              <td >   <img width="300" src="https://user-images.githubusercontent.com/20833144/147911318-fcd2ec92-e391-400d-9bbf-df843d3ecf74.png">
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th> <br>Testing dataset:   </th>
+              <td> <img width="300" src="https://user-images.githubusercontent.com/20833144/149450526-814db104-2706-4632-ad97-74a1179484fb.png">
+            </tr>
+          </tbody>
+      </table>
     </p>
