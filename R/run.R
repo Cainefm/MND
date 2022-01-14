@@ -109,6 +109,7 @@ run_desc <- function(demo, dx, rx, ip, region="hk",codes_sys = "icd9"){
     incident_raw <- dt_inci[,.(id,year_onset,age_group_std)][,.N,by=.(age_group_std,year_onset)]
     death_number <- dt_inci[,.(id,year_death=year(dod),age_group_std)][,.N,by=.(age_group_std,year_death)][!is.na(year_death)]
     prevalence.N <- merge(incident_raw,death_number,by.x=c("year_onset","age_group_std"),by.y=c("year_death","age_group_std"),suffixes = c(".inci",".death"))[,sum(N.inci)-sum(N.death)]
+    message("\n================================")
     message("Till the end of study, ",prevalence.N," ppl were found with MND.")
     poi_prev <- poisson.test(prevalence.N,sum(as.data.table(read_xlsx(dir_mnd_codes,sheet = "hk_pop"))[,`2018`]))
     message("prevalence:",paste(round(c(as.numeric(poi_prev$estimate*100000),
