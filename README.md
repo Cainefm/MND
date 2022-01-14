@@ -110,8 +110,9 @@
     dt_desc$cox_est
     ```
     <p align="center">
-       <img width="300" src="https://user-images.githubusercontent.com/20833144/147910788-06b8431e-e852-43c8-8748-8c7f4ee8f9c6.png">
+       <img width="300" src="https://user-images.githubusercontent.com/20833144/149447726-845ab9dd-a99c-4bfa-96af-441492e64c1c.png">
     </p>
+    
 
 7. Generate table one descriptive statistics
     ```r
