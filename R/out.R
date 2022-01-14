@@ -126,8 +126,8 @@ show_digit<- function(x){
 get_inci_CI <- function(x){
     temp <- poisson.test(as.numeric(x[["stdN"]]),as.numeric(x[["pop_raw"]]))
     est <- temp[["estimate"]]*100000
-    est_l <- temp$conf.int[2]*100000
-    est_h <- temp$conf.int[1]*100000
+    est_l <- temp$conf.int[1]*100000
+    est_h <- temp$conf.int[2]*100000
     est_cb <- paste0(show_digit(est)," (",
                      show_digit(est_l),"-",
                      show_digit(est_h),")")
