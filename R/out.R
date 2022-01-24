@@ -109,15 +109,6 @@ print.mndinci <- function(x){
     print(x$std_inc)
 }
 
-#' Keep digits for numbers
-#'
-#' @param x numbers
-#'
-#' @return
-show_digit<- function(x){
-    return(sprintf(as.numeric(x),fmt="%#.2f"))
-}
-
 #' Inci Ci calculation
 #'
 #' @param x
@@ -128,9 +119,9 @@ get_inci_CI <- function(x){
     est <- temp[["estimate"]]*100000
     est_l <- temp$conf.int[1]*100000
     est_h <- temp$conf.int[2]*100000
-    est_cb <- paste0(show_digit(est)," (",
-                     show_digit(est_l),"-",
-                     show_digit(est_h),")")
+    est_cb <- paste0(sxd(est)," (",
+                     sxd(est_l),"-",
+                     sxd(est_h),")")
     return(data.frame(est,est_l,est_h,est_cb))
 }
 
@@ -144,9 +135,15 @@ get_inci_CI <- function(x){
 get_tv_cox <- function(x){
     est <- exp(x$coefficients)
     est_95 <- exp(confint.default(x))
+    if(class(x)=="coxph"){
+        pvalue <- summary(x)$coefficients[,"Pr(>|z|)"]
+    }else if(class(x)=="flexsurvreg"){
+        pvalue <- 2*pnorm(-abs(x$res[,1]/x$res[,4]))
+    }
     est_com <- data.table(var=names(est),
-                          est=show_digit(est),
-                          est_l=show_digit(est_95[,1]),
-                          est_h=show_digit(est_95[,2]))
+                          est=sxd(est),
+                          est_l=sxd(est_95[,1]),
+                          est_h=sxd(est_95[,2]),
+                          p_value=sxd(pvalue,3))
     return(est_com)
 }
