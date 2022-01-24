@@ -175,7 +175,7 @@ get_subtype <- function(data,icd_subtypes_temp){
 #' @export
 #'
 #' @examples cleaning_mnd(demo, dx, codes_sys="icd9")
-cleaning_mnd <- function(demo,dx,rx,codes_sys,riluzole_name='riluzole|riluteck',...){
+cleaning_mnd <- function(demo,dx,rx,codes_sys,riluzole_name='riluzole|rilutek',...){
 
     if(codes_sys=="icd9"){
         codes_defined <- "^335.2$|^335.2[01249]"
@@ -200,7 +200,7 @@ cleaning_mnd <- function(demo,dx,rx,codes_sys,riluzole_name='riluzole|riluteck',
                      id+onset_date~.,
                      value.var = c("subtype.als","subtype.pma","subtype.pbp","subtype.pls","subtype.others"),
                      fun.aggregate = function(x) any(x))
-    temp_dx <- merge(temp_dx_codes,temp_dx,by=c("id","onset_date"))
+    temp_dx <- merge(temp_dx_codes,temp_dx,by=c("id","onset_date"))[,unique(.SD)]
 
 
     df_surv <- merge(demo[,.(id,sex,dob,dod)],
