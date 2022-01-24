@@ -12,7 +12,7 @@
 #'
 #' @examples run_sccs()
 run_sccs <- function(demo, dx, rx, ip,
-                     riluzole_name='riluzole|riluteck',
+                     riluzole_name='riluzole|rilutek',
                      obst="2001-08-24",
                      obed="2018-12-31",...){
     message("Data Cleaning for SCCS")
@@ -105,10 +105,10 @@ run_desc <- function(demo, dx, rx, ip, region="hk",codes_sys = "icd9"){
     std_pop <- setDT(read_xlsx(dir_mnd_codes,sheet="stdpop"))
     std_pop$Age<-factor(std_pop$Age)
 
-
+    dt_inci[year(dod)>2018,dod:=NA] # change the dod if their death date is larger than study end date
     incident_raw <- dt_inci[,.(id,year_onset,age_group_std)][,.N,by=.(age_group_std,year_onset)]
     death_number <- dt_inci[,.(id,year_death=year(dod),age_group_std)][,.N,by=.(age_group_std,year_death)][!is.na(year_death)]
-    prevalence.N <- merge(incident_raw,death_number,by.x=c("year_onset","age_group_std"),by.y=c("year_death","age_group_std"),suffixes = c(".inci",".death"))[,sum(N.inci)-sum(N.death)]
+    prevalence.N <- sum(incident_raw$N)-sum(death_number$N)
     message("\n================================")
     message("Till the end of study, ",prevalence.N," ppl were found with MND.")
     poi_prev <- poisson.test(prevalence.N,sum(as.data.table(read_xlsx(dir_mnd_codes,sheet = "hk_pop"))[,`2018`]))
@@ -144,12 +144,27 @@ run_desc <- function(demo, dx, rx, ip, region="hk",codes_sys = "icd9"){
                                     drug_sta+cluster(id)+sex+hx.htn+
                                     hx.depre+hx.pd+score.cci,dt_tv,id = id)
 
+    dt_tv$sex <- factor(dt_tv$sex)
+    dt_tv$id <- as.numeric(dt_tv$id)
+    # survival package: cannot handle time -dependent covariates
+    # fit_aft_timevaring <- survreg(Surv(tstop,endpt)~
+    #                                   drug_sta+cluster(id)+sex+hx.htn+
+    #                                   hx.depre+hx.pd+score.cci,dt_tv,dist="weibull")
+    # flexsurvreg
+    message("================================\n")
+    message("AFT model:")
+    fit_aft_timevaring <- flexsurvreg(Surv(tstart, tstop, endpt) ~
+                                          drug_sta+factor(sex)+factor(hx.htn)+
+                                          factor(hx.depre)+factor(hx.pd)+score.cci,data=dt_tv,dist="weibull")
+
     output <- list(dt_raw=dt_after_clean$dt_raw,
                    dt_cox=dt_tv,
                    tableone=get_tableone(dt_after_clean$dt_raw),
                    std_inci=incident_std,
                    cox_result=fit_cox_timevaring,
-                   cox_est=get_tv_cox(fit_cox_timevaring))
+                   aft_result=fit_aft_timevaring,
+                   cox_est=get_tv_cox(fit_cox_timevaring),
+                   aft_est=get_tv_cox(fit_aft_timevaring)[!var %in% c("shape","scale")])
     output <- structure(output,class=c("mndinci","list"))
     return(output)
 }
