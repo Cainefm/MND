@@ -9,9 +9,11 @@ run_sccs(
   dx,
   rx,
   ip,
-  riluzole_name = "riluzole|riluteck",
+  riluzole_name = "riluzole|rilutek",
   obst = "2001-08-24",
   obed = "2018-12-31",
+  icd_pneumonia = "486",
+  icd_arf = "^39.65|^89.18|^93.90|^93.95|^93.96|^96.7|^96.04|^518.81|^518.82|^96.7",
   ...
 )
 }

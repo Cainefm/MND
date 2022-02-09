@@ -50,13 +50,23 @@ shrink_interval <- function(data,st,ed,gap=1){
 #' 2665:    88888   F 1955-07-02 2018-11-28 2017-11-28 2018-07-25  2018-11-20 2017-11-27 2017-11-28
 #' 2666:    88888   F 1955-07-02 2018-11-28 2017-11-28 2018-07-25  2018-11-20 2018-07-30 2018-08-10
 #' 2667:    88888   F 1955-07-02 2018-11-28 2017-11-28 2018-07-25  2018-11-20 2018-10-31 2018-11-02
-get_DT_Exposure_Endpoint <- function(demo, rx, ip,riluzole_name,...){
+get_DT_Exposure_Endpoint <- function(demo, rx, ip,riluzole_name,obst,obed,icd_pneumonia,icd_arf,...){
     rx_riluzole<- shrink_interval(rx[grepl(riluzole_name,drug_name,ignore.case = T) &
                                          !setting %in% c("I")],"date_rx_st","date_rx_end")
     message("==================\nNumber of ppl: using Riluzole (Not IP)\n",
             rx_riluzole[,uniqueN(id)])
     rx_earliest <- rx_riluzole[,.(earliest_rx=min(date_rx_st)),id][,unique(.SD)]
-    ip_riluzole<- shrink_interval(ip[id %in% demo$id & id %in% rx_riluzole$id],"date_adm","date_dsg",gap = 7)
+    ip_riluzole <- shrink_interval(ip[id %in% demo$id & id %in% rx_riluzole$id],"date_adm","date_dsg",gap = 7)
+    ip_riluzole <- merge(ip_riluzole,
+                         ip[,.(id,date_adm,ae)][,.(ae=any(ae)),by=.(id,date_adm)],
+                         by=c("id","date_adm"),all.x=T)
+    # combine the Dx and IP
+    print(obed)
+    ip_riluzole <- merge(ip_riluzole[date_dsg<=ymd(obed)],
+                         dx[setting=="I",.(codes=paste(sort(unique(codes)),collapse=",")),.(id,ref_date)],
+                         by.x=c("id","date_dsg"),by.y=c("id","ref_date"),all.x=T)
+
+
     message("==================\nNumber of ppl: having admission records:\n",
             ip_riluzole[,uniqueN(id)])
     rx_ip <- merge(rx_riluzole[,indx:=NULL],
@@ -65,6 +75,10 @@ get_DT_Exposure_Endpoint <- function(demo, rx, ip,riluzole_name,...){
     demo_rx_ip<-merge(demo,rx_ip,by="id")
     message("==================\nNumber of ppl: with Demo information\n",
             rx_ip[,uniqueN(id)])
+
+    # create indicator for pneumonia and acf ------------------------------------------
+    demo_rx_ip[,adm_pneumonia:=fifelse(grepl(icd_pneumonia,codes),T,F)]
+    demo_rx_ip[,adm_arf:=fifelse(grepl(icd_arf,codes),T,F)]
     return(demo_rx_ip)
 }
 
@@ -80,7 +94,8 @@ get_DT_Exposure_Endpoint <- function(demo, rx, ip,riluzole_name,...){
 #'
 #' @examples no example
 get_DT_SCCS <- function(data,obst,obed,...){
-    df_mnd <- data[,`:=`(obst=pmax(pmin(onset_date %m-% years(1),
+    temp <- copy(data)
+    df_mnd <- temp[,`:=`(obst=pmax(pmin(onset_date %m-% years(1),
                                         earliest_rx %m-% years(1),na.rm=T),
                                    lubridate::ymd(obst),na.rm = T),
                          obed=pmin(dod,
@@ -155,6 +170,72 @@ get_DT_SCCS <- function(data,obst,obed,...){
                 strx_180a = strx+180, edrx_180a = edrx)]
     return(df_mnd)
 }
+
+
+
+#' Data created for collapsed analysis
+#'
+#' @param data
+#' @param obst
+#' @param obed
+#' @param ...
+#'
+#' @return
+#' @export
+#'
+#' @examples
+get_DT_SCCS_collapsed <- function(data,obst,obed,...){
+    temp <- copy(data)
+    df_mnd <-temp[,`:=`(obst=pmax(pmin(onset_date %m-% years(1),
+                                        earliest_rx %m-% years(1),na.rm=T),
+                                   lubridate::ymd(obst),na.rm = T),
+                         obed=pmin(dod,
+                                   pmin(onset_date ,
+                                        earliest_rx,na.rm=T) %m+% years(2),obed,na.rm=T))
+    ][,`:=`(obst=as.numeric(obst-dob),
+            obed=as.numeric(obed-dob),
+            event=as.numeric(date_adm-dob),
+            endevent=as.numeric(date_dsg-dob))]
+
+    df_mnd <- df_mnd[,`:=`(strx=as.numeric(date_rx_st-dob),
+                           edrx=as.numeric(date_rx_end-dob))]
+
+    df_mnd <- df_mnd[strx>=obst & strx<= obed & event >=obst & event <= obed]
+
+    # for more than one rx periods:
+    last_rx_time <- unique(df_mnd[,.(id,strx,edrx)])[,last_rx_ed:=as.numeric(shift(edrx,n = 1,fill = NA,type = "lag")),.(id)]
+
+    df_mnd <- merge(df_mnd,last_rx_time,by=c("id","strx","edrx"))
+
+    df_mnd[,`:=`(strx_30b=pmax(strx-30,last_rx_ed+1,na.rm = T),
+                 edrx_30b=strx-1)]
+    df_mnd[,`:=`(strx_0a=as.numeric(NA),edrx_0a = as.numeric(NA),
+                 strx_60a = as.numeric(NA), edrx_60a = as.numeric(NA),
+                 strx_120a = as.numeric(NA), edrx_120a = as.numeric(NA),
+                 strx_180a = as.numeric(NA), edrx_180a = as.numeric(NA))]
+
+    df_mnd[as.numeric(edrx-strx)<30,
+           `:=`(strx_0a=strx,edrx_0a = edrx)]
+
+    df_mnd[as.numeric(edrx-strx)>=60 & as.numeric(edrx-strx)<90 ,
+           `:=`(strx_0a=strx,edrx_0a = strx+59,
+                strx_60a = strx+60, edrx_60a = edrx)]
+
+    df_mnd[as.numeric(edrx-strx)>=120 & as.numeric(edrx-strx)<150,
+           `:=`(strx_0a=strx,edrx_0a = strx+59,
+                strx_60a = strx+60, edrx_60a = strx+119,
+                strx_120a = strx+120, edrx_120a = edrx)]
+
+
+    df_mnd[as.numeric(edrx-strx)>=180 ,
+           `:=`(strx_0a=strx,edrx_0a = strx+59,
+                strx_60a = strx+60, edrx_60a = strx+119,
+                strx_120a = strx+120, edrx_120a = strx+179,
+                strx_180a = strx+180, edrx_180a = edrx)]
+    return(df_mnd)
+}
+
+
 
 
 get_subtype <- function(data,icd_subtypes_temp){

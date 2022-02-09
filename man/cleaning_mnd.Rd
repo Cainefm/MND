@@ -4,7 +4,7 @@
 \alias{cleaning_mnd}
 \title{Create a dataset for survival and incidence calculation}
 \usage{
-cleaning_mnd(demo, dx, rx, codes_sys, riluzole_name = "riluzole|riluteck", ...)
+cleaning_mnd(demo, dx, rx, codes_sys, riluzole_name = "riluzole|rilutek", ...)
 }
 \arguments{
 \item{demo}{the dataset with demographic information, including id, dob, dod, sex, onset_date. Pls check the data shall.}

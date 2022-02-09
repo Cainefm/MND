@@ -109,6 +109,16 @@ print.mndinci <- function(x){
     print(x$std_inc)
 }
 
+#' show only the primary result
+#'
+#' @param x
+#'
+#' @return
+#' @export
+print.mndsccsoutput <- function(x){
+    print(x$primary)
+}
+
 #' Inci Ci calculation
 #'
 #' @param x

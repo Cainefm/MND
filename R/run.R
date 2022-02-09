@@ -14,11 +14,14 @@
 run_sccs <- function(demo, dx, rx, ip,
                      riluzole_name='riluzole|rilutek',
                      obst="2001-08-24",
-                     obed="2018-12-31",...){
+                     obed="2018-12-31",
+                     icd_pneumonia="486",
+                     icd_arf="^39.65|^89.18|^93.90|^93.95|^93.96|^96.7|^96.04|^518.81|^518.82|^96.7",...){
     message("Data Cleaning for SCCS")
 #    message(nrow(demo)," in the cohort","\n========================\n\n")
-    dt_combined <- get_DT_Exposure_Endpoint(demo,rx,ip,riluzole_name,...)
-    dt_sccs <- get_DT_SCCS(dt_combined,obst,obed,...)
+    dt_combined <- get_DT_Exposure_Endpoint(demo=demo,rx=rx,ip=ip,riluzole_name=riluzole_name,
+                                            obst=obst,obed=obed,icd_pneumonia=icd_pneumonia,icd_arf=icd_arf,...)
+    dt_sccs <- get_DT_SCCS(data=dt_combined,obst=obst,obed=obed,...)
     message("\n==================\nAfter cleanning, count of participants for sccs:\n", dt_sccs[,uniqueN(id)])
     ageq <- floor(seq(20,90,10)*365)
     dt_sccs$id <- as.numeric(dt_sccs$id)
@@ -42,7 +45,98 @@ run_sccs <- function(demo, dx, rx, ip,
                    # dob=dob_dmy, # for sccs version 1.5 or above
                    dob13=dob_dmy_model, # for sccs version 1.3 only
                    data = as.data.frame(dt_sccs),...)
-    #result <- append(dt_raw=dt_sccs,result)
+    # ae_subgroup analysis ----------------------------------------------------
+    message("\n==================\nSubgroup analysis: A&E\n")
+    dob_dmy_model_ae <- dt_sccs[ae==T,.(id,event,dob_dmy)][,unique(.SD)][,dob_dmy]
+    result_ae  <- sccs(event ~ strx_30b + strx_0a + strx_30a + strx_60a + strx_90a+ strx_120a +
+                            strx_150a +strx_180a +
+                            age + season,
+                        indiv = id,
+                        astart = obst,
+                        aend = obed,
+                        aevent = event,
+                        adrug = list(strx_30b,strx_0a, strx_30a,
+                                     strx_60a,strx_90a,strx_120a,
+                                     strx_150a, strx_180a),
+                        aedrug = list(edrx_30b,edrx_0a,edrx_30a,
+                                      edrx_60a,edrx_90a,edrx_120a,
+                                      edrx_150a, edrx_180a),
+                        dataformat = "stack", agegrp = ageq, seasongrp = c(0103,0105,0109,0111),
+                        # dob=dob_dmy, # for sccs version 1.5 or above
+                        dob13=dob_dmy_model_ae, # for sccs version 1.3 only
+                        data = as.data.frame(dt_sccs[ae==T]),...)
+
+    message("\n==================\nSubgroup analysis: with penumonia Dx\n")
+    # adm_pneumonia_subgroup analysis ----------------------------------------------------
+    dob_dmy_model_pn <- dt_sccs[adm_pneumonia==T,.(id,event,dob_dmy)][,unique(.SD)][,dob_dmy]
+    result_pneumonia <- sccs(event ~ strx_30b + strx_0a + strx_30a + strx_60a + strx_90a+ strx_120a +
+                           strx_150a +strx_180a +
+                           age + season,
+                       indiv = id,
+                       astart = obst,
+                       aend = obed,
+                       aevent = event,
+                       adrug = list(strx_30b,strx_0a, strx_30a,
+                                    strx_60a,strx_90a,strx_120a,
+                                    strx_150a, strx_180a),
+                       aedrug = list(edrx_30b,edrx_0a,edrx_30a,
+                                     edrx_60a,edrx_90a,edrx_120a,
+                                     edrx_150a, edrx_180a),
+                       dataformat = "stack", agegrp = ageq, seasongrp = c(0103,0105,0109,0111),
+                       # dob=dob_dmy, # for sccs version 1.5 or above
+                       dob13=dob_dmy_model_pn, # for sccs version 1.3 only
+                       data = as.data.frame(dt_sccs[adm_pneumonia==T]),...)
+
+    message("\n==================\nSubgroup analysis: with Acute respiratory failure\n")
+    # adm_acute_respiratory_failure_subgroup analysis ----------------------------------------------------
+    dob_dmy_model_arf <- dt_sccs[adm_arf==T,.(id,event,dob_dmy)][,unique(.SD)][,dob_dmy]
+    result_arf <- sccs(event ~ strx_30b + strx_0a + strx_30a + strx_60a + strx_90a+ strx_120a +
+                                 strx_150a +strx_180a +
+                                 age + season,
+                             indiv = id,
+                             astart = obst,
+                             aend = obed,
+                             aevent = event,
+                             adrug = list(strx_30b,strx_0a, strx_30a,
+                                          strx_60a,strx_90a,strx_120a,
+                                          strx_150a, strx_180a),
+                             aedrug = list(edrx_30b,edrx_0a,edrx_30a,
+                                           edrx_60a,edrx_90a,edrx_120a,
+                                           edrx_150a, edrx_180a),
+                             dataformat = "stack", agegrp = ageq, seasongrp = c(0103,0105,0109,0111),
+                             # dob=dob_dmy, # for sccs version 1.5 or above
+                             dob13=dob_dmy_model_arf, # for sccs version 1.3 only
+                             data = as.data.frame(dt_sccs[adm_arf==T]),...)
+
+    # sensitivity_collapsed ---------------------------------------------------
+    message("\n==================\nSensitivity analysis: Risk period collapsed\n")
+    dt_sccs_collapsed <- get_DT_SCCS_collapsed(dt_combined,obst,obed,...)
+    dt_sccs_collapsed$id <- as.numeric(dt_sccs_collapsed$id)
+    setorder(dt_sccs_collapsed,id,event,date_rx_st)
+    dt_sccs_collapsed$dob_dmy <- as.numeric(format(dt_sccs_collapsed$dob,"%d%m%Y")) # this is for version 1.4 or above
+    dob_dmy_model <- dt_sccs_collapsed[,.(id,event,dob_dmy)][,unique(.SD)][,dob_dmy] # this is the dob for previous SCCS package, with version less than 1.3
+
+    dob_dmy_model_collapsed <- dt_sccs_collapsed[,.(id,event,dob_dmy)][,unique(.SD)][,dob_dmy]
+    result_collapsed <- sccs(event ~ strx_30b + strx_0a + strx_60a + strx_120a + strx_180a +
+                           age + season,
+                       indiv = id,
+                       astart = obst,
+                       aend = obed,
+                       aevent = event,
+                       adrug = list(strx_30b,strx_0a, strx_60a,strx_120a,strx_180a),
+                       aedrug = list(edrx_30b,edrx_0a,edrx_60a,edrx_120a,edrx_180a),
+                       dataformat = "stack", agegrp = ageq, seasongrp = c(0103,0105,0109,0111),
+                       # dob=dob_dmy, # for sccs version 1.5 or above
+                       dob13=dob_dmy_model_collapsed, # for sccs version 1.3 only
+                       data = as.data.frame(dt_sccs_collapsed),...)
+
+
+    result <- list(dt_raw=dt_sccs,primary=result,
+                     subgroup_ae=result_ae,
+                     subgroup_pneumonia=result_pneumonia,
+                     subgroup_arf=result_arf,
+                     collapsed=result_collapsed)
+    result <- structure(result,class=c("mndsccsoutput","list"))
     return(result)
 }
 

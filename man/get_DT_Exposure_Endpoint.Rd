@@ -4,7 +4,17 @@
 \alias{get_DT_Exposure_Endpoint}
 \title{Combine the datasets with exposure and outcomes}
 \usage{
-get_DT_Exposure_Endpoint(demo, rx, ip, riluzole_name, ...)
+get_DT_Exposure_Endpoint(
+  demo,
+  rx,
+  ip,
+  riluzole_name,
+  obst,
+  obed,
+  icd_pneumonia,
+  icd_arf,
+  ...
+)
 }
 \arguments{
 \item{demo}{the dataset with demographic information, including id, dob, dod, sex, onset_date. Pls check the data shall.}
