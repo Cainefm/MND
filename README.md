@@ -1,5 +1,9 @@
 ## Epidemiology study of Motor neuron disease with the collaboration in the Neurogen
-### Updated time: **2022-1-13**  
+### Updated time: **2022-2-9**  
+- Sensitivity and subgroup analysis for SCCS were added.
+- AFT model for survival were added.
+
+### History: **2022-1-13**  
 
 
 <img src="https://img.shields.io/badge/Project-Preparing-red.svg" alt="Study Status: Started">  
