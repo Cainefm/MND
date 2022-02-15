@@ -29,7 +29,7 @@ run_sccs <- function(demo, dx, rx, ip,
     setorder(dt_sccs,id,event,date_rx_st)
     dt_sccs$dob_dmy <- as.numeric(format(dt_sccs$dob,"%d%m%Y")) # this is for version 1.4 or above
     dob_dmy_model <- dt_sccs[,.(id,event,dob_dmy)][,unique(.SD)][,dob_dmy] # this is the dob for previous SCCS package, with version less than 1.3
-    result <- sccs(event ~ strx_30b + strx_0a + strx_30a + strx_60a + strx_90a+ strx_120a +
+    result_primary <- sccs(event ~ strx_30b + strx_0a + strx_30a + strx_60a + strx_90a+ strx_120a +
                        strx_150a +strx_180a +
                        age + season,
                    indiv = id,
@@ -132,7 +132,8 @@ run_sccs <- function(demo, dx, rx, ip,
                        data = as.data.frame(dt_sccs_collapsed),...)
 
 
-    result <- list(dt_raw=dt_sccs,primary=result,
+    result <- list(dt_raw=dt_sccs,
+                     primary=result_primary,
                      subgroup_ae=result_ae,
                      subgroup_pneumonia=result_pneumonia,
                      subgroup_arf=result_arf,
