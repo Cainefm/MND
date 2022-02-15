@@ -1,4 +1,5 @@
 
+# sccs part ---------------------------------------------------------------
 
 #' sccs for mnd study
 #' @param demo the dataset with demographic information, including id, dob, dod, sex, onset_date. Pls check the data shall.
