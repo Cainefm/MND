@@ -1,7 +1,7 @@
 Package: MND
 Type: Package
 Title: A package for epidemiology study about Motor neuron disease (MND) in the NEUROGEN
-Version: 0.9.1
+Version: 0.9.8
 Depends: data.table, SCCS, lubridate, readxl, ggplot2, incidence2, survival, tableone, flexsurv
 Imports: data.table, SCCS, lubridate, readxl, ggplot2, incidence2, survival, tableone, flexsurv
 Suggests: 
