@@ -234,7 +234,8 @@ run_desc <- function(demo, dx, rx, ip, region="hk",codes_sys = "icd9"){
                        est_l=as.numeric(est_l),
                        est_h=as.numeric(est_h),
                        year_onset=factor(year_onset))]
-
+    message("================================\n")
+    message("Running Cox model")
     dt_tv <- dt_after_clean$dt_tv
     fit_cox_timevaring <- coxph(Surv(tstart,tstop,endpt)~
                                     drug_sta+cluster(id)+sex+hx.htn+
@@ -248,7 +249,7 @@ run_desc <- function(demo, dx, rx, ip, region="hk",codes_sys = "icd9"){
     #                                   hx.depre+hx.pd+score.cci,dt_tv,dist="weibull")
     # flexsurvreg
     message("================================\n")
-    message("AFT model:")
+    message("Runging AFT model:")
     fit_aft_timevaring <- flexsurvreg(Surv(tstart, tstop, endpt) ~
                                           drug_sta+factor(sex)+factor(hx.htn)+
                                           factor(hx.depre)+factor(hx.pd)+score.cci,data=dt_tv,dist="weibull")
