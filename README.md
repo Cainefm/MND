@@ -98,8 +98,30 @@
       </table>
     </p>
 
-
-
+    There are several results in the 
+    ```r 
+    dt_desc
+    ```
+    <p align="center">
+       <table class="tg">
+          <thead>
+            <tr>
+              <th>   <br>Desc results: </th>
+              <td>   <img width="300" src="https://user-images.githubusercontent.com/20833144/154187668-5acaf212-3bb5-4fa2-b9c5-b3a177c26981.png">
+            </tr>
+          </thead>
+        </table>
+    </p>
+    
+    - dt_raw: the raw database  
+    - dt_cox: the database for cox regression  
+    - tableone: the output of table one  
+    - std_inci: the standardized incidence using WHO as the reference population which used for comparison  
+    - cox_result: the result after cox regression from the R  
+    - aft_result: the result after accelerate failure time model from the R  
+    - cox_est: cleaned results for Cox  
+    - aft_est: cleaned results for AFT  
+    
     ```r
     p_inci(dt_desc,region="test")
     ```
@@ -114,7 +136,7 @@
           <tbody>
             <tr>
               <th> <br>Testing dataset:   </th>
-              <td> <img width="600" src="https://user-images.githubusercontent.com/20833144/149449826-fec2f61a-8b58-4056-aab8-183f94d0e1d1.png">
+              <td> <img width="600" src="https://user-images.githubusercontent.com/20833144/154188352-436be172-7603-4f51-961d-6c5ebe27ded5.png">
             </tr>
           </tbody>
       </table>
@@ -135,7 +157,7 @@
           <tbody>
             <tr>
               <th> <br>Testing dataset:   </th>
-              <td> <img width="600" src="https://user-images.githubusercontent.com/20833144/149449931-969a2c7c-e22e-47c0-971c-a0cc9a605de6.png">
+              <td> <img width="600" src="https://user-images.githubusercontent.com/20833144/154188412-b5d341b5-2cd3-448f-a937-fd7d721ec818.png">
             </tr>
           </tbody>
       </table>
@@ -155,7 +177,7 @@
           <tbody>
             <tr>
               <th> <br>Testing dataset:   </th>
-              <td> <img width="600" src="https://user-images.githubusercontent.com/20833144/149450181-3ac479e1-7bdc-4515-9af5-712bb3b0242b.png">
+              <td> <img width="600" src="https://user-images.githubusercontent.com/20833144/154188502-0945eab9-97c0-4dac-afc1-d2d92b93ad68.png">
             </tr>
           </tbody>
       </table>
@@ -177,7 +199,7 @@
           <tbody>
             <tr>
               <th> <br>Testing dataset:   </th>
-              <td> <img width="300" src="https://user-images.githubusercontent.com/20833144/149450445-e9072422-0a23-4bd7-a652-ea12d72aec13.png">
+              <td> <img width="300" src="https://user-images.githubusercontent.com/20833144/154188538-a2fb33bc-8923-4ba7-966c-d90207c86ff1.png">
             </tr>
           </tbody>
       </table>
@@ -188,15 +210,29 @@
     dt_desc$tableone
     ```
     <p align="center">
-       <img width="800" src="https://user-images.githubusercontent.com/20833144/147919038-75ee9cb2-e986-4d2e-9f0c-35a67b5d46a9.png">
-    </p>   
+       <table class="tg">
+          <thead>
+            <tr>
+              <th >   <br>HK results: </th>
+              <td >   <img width="800" src="https://user-images.githubusercontent.com/20833144/147919038-75ee9cb2-e986-4d2e-9f0c-35a67b5d46a9.png">
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th> <br>Testing dataset:   </th>
+              <td> <img width="800" src="https://user-images.githubusercontent.com/20833144/154188661-b6f3806b-5fe4-49e1-a757-bde3f8c03681.png">
+            </tr>
+          </tbody>
+      </table>
+    </p>
+    
 
 8. For sccs estimation:
     ```r
-    run_sccs(demo, dx, rx, ip，
-              riluzole_name = "riluzole|riluteck",
-              obst = "2001-08-24",
-              obed = "2018-12-31")
+    sccs_res <- run_sccs(demo, dx, rx, ip，
+                          riluzole_name = "riluzole|riluteck",
+                          obst = "2001-08-24",
+                          obed = "2018-12-31")
     ```
     <p align="center">
        <table class="tg">
@@ -214,3 +250,26 @@
           </tbody>
       </table>
     </p>
+ 
+    There are several results in the sccs
+    ```r 
+    sccs_res
+    ```
+    <p align="center">
+       <table class="tg">
+          <thead>
+            <tr>
+              <th>   <br>Desc results: </th>
+              <td>   <img width="300" src="https://user-images.githubusercontent.com/20833144/154200239-c7701f5a-67d6-42e7-a4b6-778cccb4b15d.png">
+            </tr>
+          </thead>
+        </table>
+    </p>
+    
+    - dt_raw: the raw database  
+    - primary: the sccs result from the primary analysis  
+    - subgroup_ae: the subgroup analysis of sccs with only the admission from A&E  
+    - subgroup_pneumonia: the subgroup analysis of sccs with only the admission with pneumonia
+    - subgroup_arf: the subgroup analysis of sccs with only the admission with accute respirtory failure  
+    - collapsed: the collapsed risk period  
+ 
