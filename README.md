@@ -259,7 +259,7 @@
        <table class="tg">
           <thead>
             <tr>
-              <th>   <br>Desc results: </th>
+              <th>   <br>SCCS results: </th>
               <td>   <img width="300" src="https://user-images.githubusercontent.com/20833144/154200239-c7701f5a-67d6-42e7-a4b6-778cccb4b15d.png">
             </tr>
           </thead>
