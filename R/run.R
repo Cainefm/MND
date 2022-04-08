@@ -195,7 +195,7 @@ run_desc <- function(demo, dx, rx, ip, region="hk"){
         codes_sys = "icd10"
         codes_drug_sys = "ATC_NCS"
     }else if(region=="tw"){
-        codes_sys = "icd9_icd10"
+        codes_sys = "icd9_icd10_nodecimal"
         codes_drug_sys = "ATC"
     }
     if(!exists("dir_mnd_codes")){stop("Pls input the directory of mnd\n eg. dir_mnd_codes<-\"./data/codes_mnd.xlsx\"")}
