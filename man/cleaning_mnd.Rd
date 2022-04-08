@@ -4,7 +4,15 @@
 \alias{cleaning_mnd}
 \title{Create a dataset for survival and incidence calculation}
 \usage{
-cleaning_mnd(demo, dx, rx, codes_sys, riluzole_name = "riluzole|rilutek", ...)
+cleaning_mnd(
+  demo,
+  dx,
+  rx,
+  codes_sys,
+  codes_drug_sys,
+  riluzole_name = "riluzole|rilutek",
+  ...
+)
 }
 \arguments{
 \item{demo}{the dataset with demographic information, including id, dob, dod, sex, onset_date. Pls check the data shall.}
@@ -24,5 +32,5 @@ two dataset:1) for incidence 2) for time varing cox
 Create a dataset for survival and incidence calculation
 }
 \examples{
-cleaning_mnd(demo, dx, codes_sys="icd9")
+cleaning_mnd(demo, dx, rx, codes_drug_sys)
 }

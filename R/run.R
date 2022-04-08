@@ -17,7 +17,7 @@ run_sccs <- function(demo, dx, rx, ip,
                      obst="2001-08-24",
                      obed="2018-12-31",
                      icd_pneumonia="486",
-                     icd_arf="^39.65|^89.18|^93.90|^93.95|^93.96|^96.7|^96.04|^518.81|^518.82|^96.7",...){
+                     icd_arf="^518.81|^518.82",...){
     message("Data Cleaning for SCCS")
 #    message(nrow(demo)," in the cohort","\n========================\n\n")
     dt_combined <- get_DT_Exposure_Endpoint(demo=demo,rx=rx,ip=ip,riluzole_name=riluzole_name,
@@ -182,16 +182,25 @@ sccs <- function(fml,dob13,...){
 #' @param dx the dataset with all diagnosis information, including id, codes, ref_date, setting. Pls check the data shall.
 #' @param rx the dataset with all prescription records, including id, drug name, date of prescription start and end, type of presciption (IP, OP, AE, Discharge). Pls check the data shall.
 #' @param region the region. "hk", "tw" or "kr"
-#' @param codes_sys the code system. "icd9", "icd10", or "readcode"
 #'
 #' @return
 #' @export
 #'
 #' @examples run_desc(demo, dx, rx)
-run_desc <- function(demo, dx, rx, ip, region="hk",codes_sys = "icd9"){
+run_desc <- function(demo, dx, rx, ip, region="hk"){
+    if(region =="hk"){
+        codes_sys = "icd9"
+        codes_drug_sys = "BNF"
+    }else if(region=="kr"){
+        codes_sys = "icd10"
+        codes_drug_sys = "NCS"
+    }else if(region=="tw"){
+        codes_sys = "icd10"
+        codes_drug_sys = "ATC"
+    }
     if(!exists("dir_mnd_codes")){stop("Pls input the directory of mnd\n eg. dir_mnd_codes<-\"./data/codes_mnd.xlsx\"")}
     if(!packageVersion("SCCS")=="1.3"){stop("SCCS version has to be 1.3")}
-    dt_after_clean <- cleaning_mnd(demo=demo,dx=dx,rx = rx, codes_sys)
+    dt_after_clean <- cleaning_mnd(demo=demo,dx=dx,rx = rx, codes_sys,codes_drug_sys)
     dt_inci <- dt_after_clean$dt_raw
 
     raw_pop <- setDT(read_xlsx(dir_mnd_codes, sheet=paste0(region,"_pop")))
@@ -264,4 +273,34 @@ run_desc <- function(demo, dx, rx, ip, region="hk",codes_sys = "icd9"){
                    aft_est=get_tv_cox(fit_aft_timevaring)[!var %in% c("shape","scale")])
     output <- structure(output,class=c("mndinci","list"))
     return(output)
+}
+
+
+#' Title
+#'
+#' @param output_desc the output from run_desc()
+#' @param output_sccs the output from run_sccs()
+#' @param dir_ouput the file directory that you want to use
+#'
+#' @return
+#' @export
+#'
+#' @examples
+saveall <- function(output_desc,output_sccs,dir_output="."){
+    tableone <- print(output_desc$tableone, noSpaces = TRUE)
+    tableone <- cbind(rownames(tableone),tableone[,c(1:4)])
+    rownames(tableone) <- NULL
+    d = list(dt_raw=output_desc$dt_raw,
+         dt_cox=output_desc$dt_cox,
+         tableone=tableone,
+         std_inci=output_desc$std_inci,
+         cox_est=output_desc$cox_est,
+         aft_est=output_desc$aft_est,
+         dt_sccs=output_sccs$dt_raw,
+         sccs_primary=output_sccs$primary$res,
+         sccs_ae = output_sccs$subgroup_ae$res,
+         sccs_pneumonia = output_sccs$subgroup_pneumonia$res,
+         sccs_arf = output_sccs$subgroup_arf$res,
+         sccs_collapsed = output_sccs$collapsed$res)
+    openxlsx::write.xlsx(d,file=paste0(dir_output,"/allresults.xlsx"))
 }

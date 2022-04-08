@@ -4,7 +4,7 @@
 \alias{run_desc}
 \title{run analysis for incidence}
 \usage{
-run_desc(demo, dx, rx, ip, region = "hk", codes_sys = "icd9")
+run_desc(demo, dx, rx, ip, region = "hk")
 }
 \arguments{
 \item{demo}{the dataset with demographic information, including id, dob, dod, sex, onset_date. Pls check the data shall.}
@@ -14,8 +14,6 @@ run_desc(demo, dx, rx, ip, region = "hk", codes_sys = "icd9")
 \item{rx}{the dataset with all prescription records, including id, drug name, date of prescription start and end, type of presciption (IP, OP, AE, Discharge). Pls check the data shall.}
 
 \item{region}{the region. "hk", "tw" or "kr"}
-
-\item{codes_sys}{the code system. "icd9", "icd10", or "readcode"}
 }
 \value{
 

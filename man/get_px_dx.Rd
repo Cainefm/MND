@@ -4,14 +4,14 @@
 \alias{get_px_dx}
 \title{Obtain the past hx}
 \usage{
-get_px_dx(data, dx, icd9)
+get_px_dx(data, dx, target_icd, ...)
 }
 \arguments{
 \item{data}{the data after initial cleanning}
 
 \item{dx}{the dataset with all diagnosis information, including id, codes, ref_date, setting. Pls check the data shall.}
 
-\item{icd9}{}
+\item{codes}{can be "icd9", "icd10", or "both"}
 }
 \value{
 
@@ -20,5 +20,5 @@ get_px_dx(data, dx, icd9)
 Obtain the past hx
 }
 \examples{
-get_px_dx(database,dx, icd9)
+get_px_dx(database,dx, codes)
 }

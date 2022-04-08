@@ -255,8 +255,8 @@ get_subtype <- function(data,icd_subtypes_temp){
 #' @return two dataset:1) for incidence 2) for time varing cox
 #' @export
 #'
-#' @examples cleaning_mnd(demo, dx, codes_sys="icd9")
-cleaning_mnd <- function(demo,dx,rx,codes_sys,riluzole_name='riluzole|rilutek',...){
+#' @examples cleaning_mnd(demo, dx, rx, codes_drug_sys)
+cleaning_mnd <- function(demo,dx,rx,codes_sys,codes_drug_sys,riluzole_name='riluzole|rilutek',...){
 
     if(codes_sys=="icd9"){
         codes_defined <- "^335.2$|^335.2[01249]"
@@ -268,6 +268,7 @@ cleaning_mnd <- function(demo,dx,rx,codes_sys,riluzole_name='riluzole|rilutek',.
 
     icd_subtypes <- as.data.table(readxl::read_excel(dir_mnd_codes,sheet = "subtype"))
     icd_subtypes_temp <- icd_subtypes[,.(Dx, abbr, grepl=get(codes_sys))]
+
     temp_dx <- copy(dx)
     setorder(temp_dx,"id","ref_date")
     temp_dx <- temp_dx[grepl(codes_defined,codes),.SD[ref_date==min(ref_date)],id
@@ -303,9 +304,18 @@ cleaning_mnd <- function(demo,dx,rx,codes_sys,riluzole_name='riluzole|rilutek',.
 
     # get past hx
     codes_icd <- setDT(read_xlsx(dir_mnd_codes,sheet = "hx"))
-    codes_icd <- codes_icd[!is.na(grepl) & !is.na(Description)]
+    codes_icd <- codes_icd[!is.na(grepl) & !is.na(Dx),.(Description,Dx,icdcodes=get(codes_sys))]
     message("================================\nobtain past hx for the cohort\n")
     apply(codes_icd,1,function(x) get_px_dx(df_surv,dx,x))
+
+    # get drug use within past 90 days
+    drug_codes <- setDT(read_xlsx(dir_mnd_codes,sheet="rx"))
+    drug_codes <- drug_codes[!is.na(Name),
+                             .(Description,Name,drugcodes=get(codes_drug_sys))]
+    message("================================\nobtain Rx within past 90 days for the cohort\n")
+    apply(drug_codes,1,function(x) get_px_rx(df_surv,rx,x))
+
+
     # add cci
     df_surv[, score.cci := (hx.mi+hx.chf+hx.pvd+hx.cbd+hx.copd+hx.dementia+hx.paralysis+(hx.dm_com0&!hx.dm_com1)+hx.dm_com1*2+hx.crf*2+(hx.liver_mild&!hx.liver_modsev)+hx.liver_modsev*3+hx.ulcers+hx.ra+hx.aids*6+hx.cancer*2+hx.cancer_mets*6)]
     df_surv[, score.cci := (score.cci+
@@ -362,21 +372,29 @@ cleaning_mnd <- function(demo,dx,rx,codes_sys,riluzole_name='riluzole|rilutek',.
 #'
 #' @param data the data after initial cleanning
 #' @param dx the dataset with all diagnosis information, including id, codes, ref_date, setting. Pls check the data shall.
-#' @param icd9
+#' @param codes can be "icd9", "icd10", or "both"
 #'
 #' @return
 #' @export
 #'
-#' @examples get_px_dx(database,dx, icd9)
-get_px_dx <- function(data,dx,icd9){
+#' @examples get_px_dx(database,dx, codes)
+get_px_dx <- function(data,dx,target_icd,...){
     temp <- merge(data[,.(id,onset_date)],
-                  dx[grepl(icd9["grepl"],codes,ignore.case = T),
+                  dx[grepl(target_icd["icdcodes"],codes,ignore.case = T),
                      .(id,dx_date=ref_date)],
                   all.y = T)[dx_date<onset_date,unique(id)]
-    data[,c(paste0("hx.",icd9["Dx"])):=fifelse(id %in% temp,T,F)]
-    message(icd9["Description"],"----",length(temp))
+    data[,c(paste0("hx.",target_icd["Dx"])):=fifelse(id %in% temp,T,F)]
+    message(target_icd["Description"],"----",length(temp))
 }
 
+get_px_rx <- function(data,rx,target_drug_code,...){
+    temp <- merge(data[,.(id,onset_date)],
+                  rx[grepl(target_drug_code["drugcodes"],codes,ignore.case = T),
+                     .(id,date_rx_st)],
+                  all.y = T)[onset_date>date_rx_st %m-% days(90) & onset_date< date_rx_st ,unique(id)]
+    data[,c(paste0(target_drug_code["Name"])):=fifelse(id %in% temp,T,F)]
+    message(target_drug_code["Description"],"----",length(temp))
+}
 
 
 
@@ -391,9 +409,13 @@ get_px_dx <- function(data,dx,icd9){
 get_tableone <- function(x){
     df_surv_table1 <- copy(x)
     codes_icd <- as.data.table(read_excel(dir_mnd_codes,sheet ="hx"))[!is.na(Description)&!is.na(Dx)]
+    drug_codes <- as.data.table(read_excel(dir_mnd_codes,sheet ="rx"))[!is.na(Description)&!is.na(Name)]
     setnames(df_surv_table1,
              codes_icd[,paste0("hx.",Dx)],
              codes_icd[,Description])
+    setnames(df_surv_table1,
+             drug_codes[,Name],
+             drug_codes[,Description])
     subtype_icd <- as.data.table(read_excel(dir_mnd_codes,sheet ="subtype"))[!is.na(Dx)&!is.na(abbr)]
     setnames(df_surv_table1,
              subtype_icd[,paste0("subtype.",abbr),],
@@ -403,7 +425,7 @@ get_tableone <- function(x){
     vars <- c("Amyotrophic lateral sclerosis", "Progressive muscular atrophy",
               "Progressive bulbar palsy", "Primary lateral sclerosis", "Others or unclassified",
               "sex", "age_adm", "age_group", "age_group_std", "score.cci", "riluzole",
-              codes_icd[,Description])
+              codes_icd[,Description],drug_codes[,Description])
 
     catvars <- setdiff(vars,c("age_adm", "score.cci"))
 
