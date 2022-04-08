@@ -2,7 +2,7 @@
 # # restore the development enviorment --------------------------------------
 # renv::restore()
 #
-# demo <- demo[id %in% sample(id,200),]
+# demo <- demo[id %in% sample(id,500),]
 #
 # a <- readRDS("../MND Project/5.cleaned data/df_rx.rds")
 # rx <- a[,.(id = reference_key,drug_name=drug_name,
