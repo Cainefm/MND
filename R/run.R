@@ -193,7 +193,7 @@ run_desc <- function(demo, dx, rx, ip, region="hk"){
         codes_drug_sys = "BNF"
     }else if(region=="kr"){
         codes_sys = "icd10"
-        codes_drug_sys = "NCS"
+        codes_drug_sys = "ATC_NCS"
     }else if(region=="tw"){
         codes_sys = "icd9_icd10"
         codes_drug_sys = "ATC"
