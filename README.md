@@ -2,6 +2,8 @@
 ### Updated time: **2022-2-9**  
 - Sensitivity and subgroup analysis for SCCS were added.
 - AFT model for survival were added.
+### Updated time: **2022-8-9**
+- Add trycatch for sccs since some small dataset cannot conduct sccs.
 
 ### History: **2022-1-13**  
 

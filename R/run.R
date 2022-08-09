@@ -29,7 +29,8 @@ run_sccs <- function(demo, dx, rx, ip,
     setorder(dt_sccs,id,event,date_rx_st)
     dt_sccs$dob_dmy <- as.numeric(format(dt_sccs$dob,"%d%m%Y")) # this is for version 1.4 or above
     dob_dmy_model <- dt_sccs[,.(id,event,dob_dmy)][,unique(.SD)][,dob_dmy] # this is the dob for previous SCCS package, with version less than 1.3
-    result_primary <- sccs(event ~ strx_30b + strx_0a + strx_30a + strx_60a + strx_90a+ strx_120a +
+
+    result_primary <- tryCatch(sccs(event ~ strx_30b + strx_0a + strx_30a + strx_60a + strx_90a+ strx_120a +
                        strx_150a +strx_180a +
                        age + season,
                    indiv = id,
@@ -45,11 +46,12 @@ run_sccs <- function(demo, dx, rx, ip,
                    dataformat = "stack", agegrp = ageq, seasongrp = c(0103,0105,0109,0111),
                    # dob=dob_dmy, # for sccs version 1.5 or above
                    dob13=dob_dmy_model, # for sccs version 1.3 only
-                   data = as.data.frame(dt_sccs),...)
+                   data = as.data.frame(dt_sccs),...), error = function(e) print("error~!"))
     # ae_subgroup analysis ----------------------------------------------------
     message("\n==================\nSubgroup analysis: A&E\n")
     dob_dmy_model_ae <- dt_sccs[ae==T,.(id,event,dob_dmy)][,unique(.SD)][,dob_dmy]
-    result_ae  <- sccs(event ~ strx_30b + strx_0a + strx_30a + strx_60a + strx_90a+ strx_120a +
+
+    result_ae  <- tryCatch(sccs(event ~ strx_30b + strx_0a + strx_30a + strx_60a + strx_90a+ strx_120a +
                             strx_150a +strx_180a +
                             age + season,
                         indiv = id,
@@ -65,12 +67,13 @@ run_sccs <- function(demo, dx, rx, ip,
                         dataformat = "stack", agegrp = ageq, seasongrp = c(0103,0105,0109,0111),
                         # dob=dob_dmy, # for sccs version 1.5 or above
                         dob13=dob_dmy_model_ae, # for sccs version 1.3 only
-                        data = as.data.frame(dt_sccs[ae==T]),...)
+                        data = as.data.frame(dt_sccs[ae==T]),...), error = function(e) print("error~!"))
 
     message("\n==================\nSubgroup analysis: with penumonia Dx\n")
     # adm_pneumonia_subgroup analysis ----------------------------------------------------
     dob_dmy_model_pn <- dt_sccs[adm_pneumonia==T,.(id,event,dob_dmy)][,unique(.SD)][,dob_dmy]
-    result_pneumonia <- sccs(event ~ strx_30b + strx_0a + strx_30a + strx_60a + strx_90a+ strx_120a +
+
+    result_pneumonia <- tryCatch(sccs(event ~ strx_30b + strx_0a + strx_30a + strx_60a + strx_90a+ strx_120a +
                            strx_150a +strx_180a +
                            age + season,
                        indiv = id,
@@ -86,28 +89,30 @@ run_sccs <- function(demo, dx, rx, ip,
                        dataformat = "stack", agegrp = ageq, seasongrp = c(0103,0105,0109,0111),
                        # dob=dob_dmy, # for sccs version 1.5 or above
                        dob13=dob_dmy_model_pn, # for sccs version 1.3 only
-                       data = as.data.frame(dt_sccs[adm_pneumonia==T]),...)
+                       data = as.data.frame(dt_sccs[adm_pneumonia==T]),...), error = function(e) print("error~!"))
 
     message("\n==================\nSubgroup analysis: with Acute respiratory failure\n")
     # adm_acute_respiratory_failure_subgroup analysis ----------------------------------------------------
     dob_dmy_model_arf <- dt_sccs[adm_arf==T,.(id,event,dob_dmy)][,unique(.SD)][,dob_dmy]
-    result_arf <- sccs(event ~ strx_30b + strx_0a + strx_30a + strx_60a + strx_90a+ strx_120a +
-                                 strx_150a +strx_180a +
-                                 age + season,
-                             indiv = id,
-                             astart = obst,
-                             aend = obed,
-                             aevent = event,
-                             adrug = list(strx_30b,strx_0a, strx_30a,
-                                          strx_60a,strx_90a,strx_120a,
-                                          strx_150a, strx_180a),
-                             aedrug = list(edrx_30b,edrx_0a,edrx_30a,
-                                           edrx_60a,edrx_90a,edrx_120a,
-                                           edrx_150a, edrx_180a),
-                             dataformat = "stack", agegrp = ageq, seasongrp = c(0103,0105,0109,0111),
-                             # dob=dob_dmy, # for sccs version 1.5 or above
-                             dob13=dob_dmy_model_arf, # for sccs version 1.3 only
-                             data = as.data.frame(dt_sccs[adm_arf==T]),...)
+
+    result_arf <- tryCatch(sccs(event ~ strx_30b + strx_0a + strx_30a + strx_60a + strx_90a+ strx_120a +
+                                    strx_150a +strx_180a +
+                                    age + season,
+                                indiv = id,
+                                astart = obst,
+                                aend = obed,
+                                aevent = event,
+                                adrug = list(strx_30b,strx_0a, strx_30a,
+                                             strx_60a,strx_90a,strx_120a,
+                                             strx_150a, strx_180a),
+                                aedrug = list(edrx_30b,edrx_0a,edrx_30a,
+                                              edrx_60a,edrx_90a,edrx_120a,
+                                              edrx_150a, edrx_180a),
+                                dataformat = "stack", agegrp = ageq, seasongrp = c(0103,0105,0109,0111),
+                                # dob=dob_dmy, # for sccs version 1.5 or above
+                                dob13=dob_dmy_model_arf, # for sccs version 1.3 only
+                                data = as.data.frame(dt_sccs[adm_arf==T]),...),
+                           error= function(e) print("error"))
 
     # sensitivity_collapsed ---------------------------------------------------
     message("\n==================\nSensitivity analysis: Risk period collapsed\n")
